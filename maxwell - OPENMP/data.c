@@ -89,12 +89,13 @@ double ***alloc_3d_array(int m, int n, int o) {
 	x = (double***) malloc(m*sizeof(double **));
 	x[0] = (double **) malloc(m*n*sizeof(double *));
 	x[0][0] = (double *) calloc(m*n*o,sizeof(double));
-	#pragma omp parallel for
-	for (int i = 1; i < m; i++) {
+	int i,j;
+	#pragma omp parallel for private(i)
+	for (i = 1; i < m; i++) {
 		x[i] = &x[0][i*n];
 	}
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
+	for (i = 0; i < m; i++) {
+		for (j = 0; j < n; j++) {
 			if (i == 0 && j == 0) continue;
 			x[i][j] = &x[0][0][i*n*o + j*o];
 		}
