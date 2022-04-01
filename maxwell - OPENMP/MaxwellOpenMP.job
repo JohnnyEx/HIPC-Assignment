@@ -2,7 +2,7 @@
 #SBATCH --job-name=threaded_job_MaxwellOPENMP	#OPENMP Jobname
 #SBATCH --mail-type=END,FAIL			# Mail event(none,begin,end,fail,all)
 #SBATCH --mail-user=iab533@york.ac.uk		# Where to send email
-#SBATCH --ntasks=2				#Run on a single CPU
+#SBATCH --ntasks=4				#Run on a single CPU
 #SBATCH --cpus-per-task=8			#...with 8 cores
 #SBATCH --mem=4gb				# Job memory request
 #SBATCH --time=00:10:00				# Time limit hrs:min:sec
@@ -17,7 +17,7 @@ echo
 
 module load compiler/GCC/11.2.0
 
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=32
 "/users/iab533/scratch/HIPC-Assignment/maxwell - OPENMP/maxwell"
 
 echo 
