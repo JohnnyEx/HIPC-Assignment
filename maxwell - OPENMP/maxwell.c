@@ -11,6 +11,8 @@
 #include <time.h>
 #include <omp.h>
 
+#include <papi.h>
+
 /**
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
@@ -121,8 +123,31 @@ int main(int argc, char *argv[]) {
 	printf("\n\n");	
 	// end omp
 	
+	// Papi code ffs
+	int retval;
+    retval=PAPI_library_init(PAPI_VER_CURRENT);
+    if (retval!=PAPI_VER_CURRENT) {
+        printf("Error initializing PAPI! %s\n",	PAPI_strerror(retval));
+        return 0;
+    }
+
+	retval=PAPI_add_named_event(eventset,"PAPI_TOT_CYC");
+	if (retval!=PAPI_OK) {
+		printf("Error adding PAPI_TOT_CYC: %s\n",PAPI_strerror(retval));
+	}
+	//end papi initialization
+
 	// time starting
 	clock_t begin = clock();
+
+	// papi start
+	long long count;
+
+	PAPI_reset(eventset);
+	retval=PAPI_start(eventset);
+	if (retval!=PAPI_OK) {
+		printf("Error starting CUDA: %s\n",PAPI_strerror(retval));
+	}
 
 	set_defaults();
 	parse_args(argc, argv);
@@ -168,6 +193,19 @@ int main(int argc, char *argv[]) {
     // calc the time;
 	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC / omp_get_num_threads();
 	printf("Time spent for this execution: %lf", time_spent);
+
+	// end papii
+	retval=PAPI_stop(eventset,&count);
+	if (retval!=PAPI_OK) {
+		printf("Error stopping:  %s\n", PAPI_strerror(retval));
+	}
+	else {
+		printf("Measured %lld cycles\n",count);
+	}
+
+	PAPI_cleanup_eventset(eventset);
+    PAPI_destroy_eventset(&eventset);
+	// end
 
 	if (!no_output) 
 		write_result();
