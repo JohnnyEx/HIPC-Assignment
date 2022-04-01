@@ -6,6 +6,8 @@
 #include "vtk.h"
 #include "data.h"
 
+#include <omp.h>
+
 const double c = 299792458; // Speed of light
 const double mu = 4.0 * M_PI * 1.0e-7; // permiability of free space
 const double eps = 1.0 / (c * c * mu); // permitivitty of free space
@@ -58,6 +60,7 @@ double **alloc_2d_array(int m, int n) {
 
   	x = (double **)malloc(m*sizeof(double *));
   	x[0] = (double *)calloc(m*n,sizeof(double));
+	#pragma omp parallel for
   	for ( i = 1; i < m; i++ )
     	x[i] = &x[0][i*n];
 	return x;
@@ -86,6 +89,7 @@ double ***alloc_3d_array(int m, int n, int o) {
 	x = (double***) malloc(m*sizeof(double **));
 	x[0] = (double **) malloc(m*n*sizeof(double *));
 	x[0][0] = (double *) calloc(m*n*o,sizeof(double));
+	#pragma omp parallel for
 	for (int i = 1; i < m; i++) {
 		x[i] = &x[0][i*n];
 	}

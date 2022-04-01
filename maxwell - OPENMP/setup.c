@@ -7,6 +7,8 @@
 #include "data.h"
 #include "setup.h"
 
+#include <omp.h>
+
 /**
  * @brief Set up some default values before arguments have been loaded
  * 
@@ -74,10 +76,12 @@ void free_arrays() {
  * 
  */
 void problem_set_up() {
+	
+    double xcen = lengthX / 2.0;
+	double ycen = lengthY / 2.0;
+	#pragma omp parallel for schedule(static)
     for (int i = 0; i < Ex_size_x; i++ ) {
         for (int j = 0; j < Ex_size_y; j++) {
-            double xcen = lengthX / 2.0;
-            double ycen = lengthY / 2.0;
             double xcoord = (i - xcen) * dx;
             double ycoord = j * dy;
             double rx = xcen - xcoord;
@@ -88,10 +92,9 @@ void problem_set_up() {
             Ex[i][j] = mag * tx;
 		}
 	}
+	#pragma omp parallel for schedule(static)
     for (int i = 0; i < Ey_size_x; i++ ) {
         for (int j = 0; j < Ey_size_y; j++) {
-            double xcen = lengthX / 2.0;
-            double ycen = lengthY / 2.0;
             double xcoord = i * dx;
             double ycoord = (j - ycen) * dy;
             double rx = xcen - xcoord;

@@ -88,6 +88,10 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
  * @return int The return value of the application
  */
 int main(int argc, char *argv[]) {
+	
+	// time starting
+	clock_t begin = clock();
+
 	set_defaults();
 	parse_args(argc, argv);
 	setup();
@@ -126,6 +130,12 @@ int main(int argc, char *argv[]) {
 
 	printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 	printf("Simulation complete.\n");
+
+	// time stop
+	clock_t end = clock();
+    // calc the time;
+	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC;
+	printf("Time spent for this execution: %lf", time_spent);
 
 	if (!no_output) 
 		write_result();

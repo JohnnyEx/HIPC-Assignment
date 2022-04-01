@@ -8,27 +8,40 @@
 #include "data.h"
 #include "setup.h"
 
+#include <time.h>
+#include <omp.h>
+
 /**
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
 void update_fields() {
+
+	// constants;
+	double dtx = (dt / dx);
+	double dty = (dt / dy);
+	double dtdyepsmu = dt / (dy * eps * mu);
+	double dtdxepsmu = dt / (dx * eps * mu);
+
+	#pragma omp parallel for 
 	for (int i = 0; i < Bz_size_x; i++) {
 		for (int j = 0; j < Bz_size_y; j++) {
-			Bz[i][j] = Bz[i][j] - (dt / dx) * (Ey[i+1][j] - Ey[i][j])
-				                + (dt / dy) * (Ex[i][j+1] - Ex[i][j]);
+			Bz[i][j] = Bz[i][j] - dtx * (Ey[i+1][j] - Ey[i][j])
+				                + dty * (Ex[i][j+1] - Ex[i][j]);
 		}
 	}
 
+	#pragma omp parallel for
 	for (int i = 0; i < Ex_size_x; i++) {
 		for (int j = 1; j < Ex_size_y-1; j++) {
-			Ex[i][j] = Ex[i][j] + (dt / (dy * eps * mu)) * (Bz[i][j] - Bz[i][j-1]);
+			Ex[i][j] = Ex[i][j] + dtdyepsmu * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
+	#pragma omp parallel for
 	for (int i = 1; i < Ey_size_x-1; i++) {
 		for (int j = 0; j < Ey_size_y; j++) {
-			Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i][j] - Bz[i-1][j]);
+			Ey[i][j] = Ey[i][j] - dtdxepsmu * (Bz[i][j] - Bz[i-1][j]);
 		}
 	}
 }
@@ -38,11 +51,13 @@ void update_fields() {
  * 
  */
 void apply_boundary() {
+	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < Ex_size_x; i++) {
 		Ex[i][0] = -Ex[i][1];
 		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
 	}
 
+	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < Ey_size_y; j++) {
 		Ey[0][j] = -Ey[1][j];
 		Ey[Ey_size_x-1][j] = -Ey[Ey_size_x-2][j];
@@ -59,16 +74,17 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 
+	#pragma omp parallel for reduction (+:E_mag)
 	for (int i = 1; i < E_size_x-1; i++) {
 		for (int j = 1; j < E_size_y-1; j++) {
 			E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
 			E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
 			//E[i][j][2] = 0.0; // in 2D we don't care about this dimension
-
 			*E_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
 		}
 	}
 	
+	#pragma omp parallel for reduction (+:B_mag)
 	for (int i = 1; i < B_size_x-1; i++) {
 		for (int j = 1; j < B_size_y-1; j++) {
 			//B[i][j][0] = 0.0; // in 2D we don't care about these dimensions
@@ -88,6 +104,20 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
  * @return int The return value of the application
  */
 int main(int argc, char *argv[]) {
+
+	// omp threads and stuff
+	int const nMaxOMPThreads = omp_get_max_threads();
+	int const nNumProcessors = omp_get_num_procs();
+
+	printf("     OMP system reports following parameters: \n");
+	printf("         max number of threads    = %6d \n", nMaxOMPThreads);
+	printf("         number of computer nodes = %6d   ", nNumProcessors);
+	printf("\n\n");	
+	// end omp
+	
+	// time starting
+	clock_t begin = clock();
+
 	set_defaults();
 	parse_args(argc, argv);
 	setup();
@@ -126,6 +156,12 @@ int main(int argc, char *argv[]) {
 
 	printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 	printf("Simulation complete.\n");
+
+	// time stop
+	clock_t end = clock();
+    // calc the time;
+	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC / omp_get_num_threads();
+	printf("Time spent for this execution: %lf", time_spent);
 
 	if (!no_output) 
 		write_result();
