@@ -15,12 +15,12 @@ obj/%.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) 
 
 maxwell: $(OBJ)
-	$(CC) -fopenmp -o $@ $^ $(CFLAGS) $(LIBFLAGS) 
+	$(CC) -lpapi -fopenmp -o $@ $^ $(CFLAGS) $(LIBFLAGS) 
 
 clean:
 	rm -Rf $(OBJDIR)
 	rm -f maxwell
-	rm maxwell.vtk
+	rm -f maxwell.vtk
 
 directories: $(OBJDIR)
 

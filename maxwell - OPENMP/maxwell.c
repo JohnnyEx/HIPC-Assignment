@@ -125,11 +125,18 @@ int main(int argc, char *argv[]) {
 	
 	// Papi code ffs
 	int retval;
-    retval=PAPI_library_init(PAPI_VER_CURRENT);
-    if (retval!=PAPI_VER_CURRENT) {
-        printf("Error initializing PAPI! %s\n",	PAPI_strerror(retval));
-        return 0;
-    }
+   	 retval=PAPI_library_init(PAPI_VER_CURRENT);
+   	 if (retval!=PAPI_VER_CURRENT) {
+       		printf("Error initializing PAPI! %s\n",	PAPI_strerror(retval));
+        	return 0;
+   	 }
+
+	int eventset=PAPI_NULL;
+
+	retval=PAPI_create_eventset(&eventset);
+	if (retval!=PAPI_OK) {
+  	printf("Error creating eventset! %s\n", PAPI_strerror(retval));
+	}
 
 	retval=PAPI_add_named_event(eventset,"PAPI_TOT_CYC");
 	if (retval!=PAPI_OK) {
