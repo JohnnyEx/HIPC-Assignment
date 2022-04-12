@@ -3,7 +3,7 @@
 #SBATCH --mail-type=END,FAIL			# Mail event(none,begin,end,fail,all)
 #SBATCH --mail-user=iab533@york.ac.uk	# Where to send email
 #SBATCH --ntasks=40				        #Run on a single CPU
-#SBATCH --nodes = 2
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=20
 #SBATCH --cpus-per-task=1			    #...with 8 cores
 #SBATCH --time=00:10:00				    # Time limit hrs:min:sec
