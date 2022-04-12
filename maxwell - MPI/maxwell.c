@@ -14,7 +14,7 @@
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
-void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col, int size, int rank) {
+void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col, int size, int rank, int left, int right) {
 	
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Ey[0], 1, Ey_colm, left, 13, Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	while (i < steps) {
 		apply_boundary(rank, size);
-		update_fields(Ex_col, Ey_col, Bz_col, rank, size);
+		update_fields(Ex_col, Ey_col, Bz_col, rank, size, left, right);
 
 		t += dt;
 
