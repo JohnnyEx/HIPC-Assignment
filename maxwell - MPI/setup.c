@@ -42,34 +42,19 @@ void setup() {
  * 
  */
 void allocate_arrays(int rank, int size) {
-
-	// calculating Ex the start and end for parallel processors
-    int Exstartj = rank * ((Y+1)/size) - 1;
-    if (Exstartj < 0) Exstartj = 0;
-    int Exendj = (rank+1) * (Y+1/size);
-    if (Exendj >= Y) Exendj = Y;
-    int ExsizeJ = Exendj - Exstartj + 1;
-
-	// calculating Ey start and end for parallel processors
-	int Eystartj = rank * (Y/size) - 1;
-    if (Eystartj < 0) Eystartj = 0;
-    int Eyendj = (rank+1) * (Y/size);
-    if (Eyendj >= Y-1) Eyendj = Y - 1;
-    int Eysizej = Eyendj - Eystartj + 1;
-	//// Ey j values can be used for Bz as well
-
-	Ex_size_x = X; Ex_size_y = ExsizeJ;
-	Ex = alloc_2d_array(X, ExsizeJ);
-	Ey_size_x = X+1; Ey_size_y = Eysizej;
-	Ey = alloc_2d_array(X+1, Eysizej);
+	// Add ghost columns
+	Ex_size_x = X; Ex_size_y = Y+1;
+	Ex = alloc_2d_array(X + 1, Y + 1);
+	Ey_size_x = X+1; Ey_size_y = Y;
+	Ey = alloc_2d_array(X + 1, Y);
 	
-	Bz_size_x = X; Bz_size_y = Eysizej;
-	Bz = alloc_2d_array(X, Eysizej);
+	Bz_size_x = X; Bz_size_y = Y;
+	Bz = alloc_2d_array(X + 1, Y);
 	
-	E_size_x = X+1; E_size_y = ExsizeJ; E_size_z = 3;
+	E_size_x = X + 1; E_size_y = Y + 1; E_size_z = 3;
 	E = alloc_3d_array(E_size_x, E_size_y, E_size_z);
 
-	B_size_x = X+1; B_size_y = ExsizeJ; B_size_z = 3;
+	B_size_x = X + 1; B_size_y = Y + 1; B_size_z = 3;
 	B = alloc_3d_array(B_size_x, B_size_y, B_size_z);
 }
 

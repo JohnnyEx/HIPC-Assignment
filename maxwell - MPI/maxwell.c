@@ -14,31 +14,46 @@
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
-void update_fields(int rank, int size) {
-	int mystart = (rank == 0) ? 0 : 1;
-    int myend = (rank == size-1) ? Bz_size_y : Bz_size_y-1;
+void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col, int size, int rank) {
+	
+	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Sendrecv(Ey[0], 1, Ey_colm, left, 13, Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
 	for (int i = 0; i < Bz_size_x; i++) {
-		for (int j = mystart; j < myend; j++) {
+		for (int j = 0; j < Bz_size_y; j++) {
 			Bz[i][j] = Bz[i][j] - (dt / dx) * (Ey[i+1][j] - Ey[i][j])
 				                + (dt / dy) * (Ex[i][j+1] - Ex[i][j]);
 		}
 	}
 
-	int mystartEx = (rank == 0) ? 0 : 1;
-    int myendEx = (rank == size-1) ? Ex_size_y : Ex_size_y-1;
 	for (int i = 0; i < Ex_size_x; i++) {
-		for (int j = mystartEx + 1; j < myendEx-1; j++) {
+		for (int j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + (dt / (dy * eps * mu)) * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
-	int mystartEy = (rank == 0) ? 0 : 1;
-    int myendEy = (rank == size-1) ? Ey_size_y : Ey_size_y-1;
-	for (int i = 1; i < Ey_size_x-1; i++) {
-		for (int j = mystartEy; j < myendEy; j++) {
-			Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i][j] - Bz[i-1][j]);
+	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Sendrecv(Bz[Bz_size_x-1], 1, Ez_col, right, 13, Bz[Bz_size_x], 1, Ez_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+	if (rank == 0) {
+		for (int i = 1; i < Ey_size_x-1; i++) {
+			for (int j = 0; j < Ey_size_y; j++) {
+				Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i][j] - Bz[i-1][j]);
+			}
+		}
+	} else {
+		for (int i = 0; i < Ey_size_x-1; i++) {
+			for (int j = 0; j < Ey_size_y; j++) {
+				if (i == 0)
+					Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i][j] - Bz[Bz_size_x][j]);
+				else
+					Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i][j] - Bz[i-1][j]);
+			}
 		}
 	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Sendrecv(Ex[Ex_size_x-1], 1, Ex_col, right, 13, Ex[Ex_size_x], 1, Ex_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
 /**
@@ -47,13 +62,13 @@ void update_fields(int rank, int size) {
  */
 void apply_boundary(int rank, int size) {
 	for (int i = 0; i < Ex_size_x; i++) {
-		if(rank == 0) Ex[i][0] = -Ex[i][1];
-		if(rank == size - 1) Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
+		Ex[i][0] = -Ex[i][1];
+		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
 	}
 
 	for (int j = 0; j < Ey_size_y; j++) {
-		Ey[0][j] = -Ey[1][j];
-		Ey[Ey_size_x-1][j] = -Ey[Ey_size_x-2][j];
+		if (rank == 0) Ey[0][j] = -Ey[1][j];
+		if (rank == size - 1) Ey[Ey_size_x-1][j] = -Ey[Ey_size_x-2][j];
 	}
 }
 
@@ -67,34 +82,47 @@ void resolve_to_grid(double *E_mag, double *B_mag, int rank, int size) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 
+	if (rank == 0) {
+		for (int i = 1; i < E_size_x-1; i++) {
+			for (int j = 1; j < E_size_y-1; j++) {
+				E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
+				E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
+				*E_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
+			}
+		}
 
-	int mystartE = (rank == 0) ? 0 : 1;
-    int myendE = (rank == size-1) ? E_size_y : E_size_y-1;
-	for (int i = 1; i < E_size_x-1; i++) {
-		for (int j = mystartE + 1; j < myendE-1; j++) { // removing ghost cells
-			E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
-			E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
-			//E[i][j][2] = 0.0; // in 2D we don't care about this dimension
+		for (int i = 1; i < B_size_x-1; i++) {
+			for (int j = 1; j < B_size_y-1; j++) {
+				B[i][j][2] = (Bz[i-1][j] + Bz[i][j] + Bz[i][j-1] + Bz[i-1][j-1]) / 4.0;
+				*B_mag += sqrt(B[i][j][2] * B[i][j][2]);
+			}
+		}
+	} else {
+		for (int i = 0; i < E_size_x-1; i++) {
+			for (int j = 1; j < E_size_y-1; j++) {
+				if (i == 0) {
+					E[i][j][0] = (Ex[Bz_size_x][j] + Ex[i][j]) / 2.0;
+					E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
+				}
+				else {
+					E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
+					E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
+				}
+				*E_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
+			}
+		}
 
-			*E_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
+		for (int i = 0; i < B_size_x-1; i++) {
+			for (int j = 1; j < B_size_y-1; j++) {
+				if (i == 0)
+					B[i][j][2] = (Bz[Bz_size_x][j] + Bz[i][j] + Bz[i][j-1] + Bz[Bz_size_x][j-1]) / 4.0;
+				else
+					B[i][j][2] = (Bz[i-1][j] + Bz[i][j] + Bz[i][j-1] + Bz[i-1][j-1]) / 4.0;
+				*B_mag += sqrt(B[i][j][2] * B[i][j][2]);
+			}
 		}
 	}
-	
-	int mystartB = (rank == 0) ? 0 : 1;
-    int myendB = (rank == size-1) ? B_size_y : B_size_y-1;
-	for (int i = 1; i < B_size_x-1; i++) {
-		for (int j = mystartB + 1; j < myendB-1; j++) { // removing ghost cells
-			//B[i][j][0] = 0.0; // in 2D we don't care about these dimensions
-			//B[i][j][1] = 0.0;
-			B[i][j][2] = (Bz[i-1][j] + Bz[i][j] + Bz[i][j-1] + Bz[i-1][j-1]) / 4.0;
-
-			*B_mag += sqrt(B[i][j][2] * B[i][j][2]);
-		}
-	}
-
 	// perform a sum reduction to help calculate the global mean value
-    //MPI_Allreduce(MPI_IN_PLACE, B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    //MPI_Allreduce(MPI_IN_PLACE, E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 }
 
 /**
@@ -123,21 +151,36 @@ int main(int argc, char *argv[]) {
 
 	problem_set_up(rank, size);
 
+	// spray and pray
+	MPI_Datatype Ex_col, Ey_col, Bz_col;
+	MPI_Type_vector(1, Ex_size_y, Ex_size_y, MPI_DOUBLE, &Ex_col);
+	MPI_Type_commit(&Ex_col);
+	MPI_Type_vector(1, Ey_size_y, Ey_size_y, MPI_DOUBLE, &Ey_col);
+	MPI_Type_commit(&Ey_col);
+	MPI_Type_vector(1, Bz_size_y, Bz_size_y, MPI_DOUBLE, &Bz_col);
+	MPI_Type_commit(&Bz_col);
+	int left = rank-1 < 0 ? MPI_PROC_NULL : rank-1;
+	int right = rank+1 >= size ? MPI_PROC_NULL: rank+1;
+
 	// start at time 0
 	double t = 0.0;
 	int i = 0;
 	while (i < steps) {
 		apply_boundary(rank, size);
-		update_fields(rank, size);
+		update_fields(Ex_col, Ey_col, Bz_col, rank, size);
 
 		t += dt;
 
 		if (i % output_freq == 0) {
 			double E_mag, B_mag;
 			resolve_to_grid(&E_mag, &B_mag, rank, size);
+			// waiting for everyone here and reduce them
+			MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Allreduce(MPI_IN_PLACE, &B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+			MPI_Allreduce(MPI_IN_PLACE, &E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 			if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 
-			if ((!no_output) && (enable_checkpoints))
+			if ((!no_output) && (enable_checkpoints) && rank == 0)
 				write_checkpoint(i);
 		}
 
@@ -146,14 +189,21 @@ int main(int argc, char *argv[]) {
 
 	double E_mag, B_mag;
 	resolve_to_grid(&E_mag, &B_mag, rank, size);
+	// waiting for everyone here
+	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Allreduce(MPI_IN_PLACE, &B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	MPI_Allreduce(MPI_IN_PLACE, &E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 	if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 	if (rank == 0) printf("Simulation complete.\n");
 
-	if (!no_output) 
-		if (rank == 0) write_result();
+	if (!no_output && rank == 0) 
+		write_result();
 
 	free_arrays();
+	MPI_Type_free(&Ex_col);
+	MPI_Type_free(&Ey_col);
+	MPI_Type_free(&Bz_col);
 	
 	// Finalizing the MPI - which should return success / failure
 	MPI_Finalize();
