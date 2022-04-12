@@ -90,10 +90,10 @@ void free_arrays() {
  * 
  */
 void problem_set_up(int rank, int size) {
-	int mystart = (rank == 0) ? 0 : 1;
-    int myend = (rank == size-1) ? Ex_size_y : Ex_size_y-1;
+	int mystartEx = (rank == 0) ? 0 : 1;
+    int myendEx = (rank == size-1) ? Ex_size_y : Ex_size_y-1;
     for (int i = 0; i < Ex_size_x; i++ ) {
-        for (int j = mystart; j < myend; j++) {
+        for (int j = mystartEx; j < myendEx; j++) {
             double xcen = lengthX / 2.0;
             double ycen = lengthY / 2.0;
             double xcoord = (i - xcen) * dx;
