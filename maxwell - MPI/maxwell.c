@@ -93,8 +93,8 @@ void resolve_to_grid(double *E_mag, double *B_mag, int rank, int size) {
 	}
 
 	// perform a sum reduction to help calculate the global mean value
-    MPI_Allreduce(MPI_IN_PLACE, B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    //MPI_Allreduce(MPI_IN_PLACE, B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    //MPI_Allreduce(MPI_IN_PLACE, E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 }
 
 /**
