@@ -1,4 +1,4 @@
-CC=gcc
+CC=mpicc
 CFLAGS=-O3 
 LIBFLAGS=-lm
 
@@ -20,6 +20,7 @@ maxwell: $(OBJ)
 clean:
 	rm -Rf $(OBJDIR)
 	rm -f maxwell
+	rm -f maxwell.vtk
 
 directories: $(OBJDIR)
 

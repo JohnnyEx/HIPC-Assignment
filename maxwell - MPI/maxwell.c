@@ -8,26 +8,34 @@
 #include "data.h"
 #include "setup.h"
 
+#include <mpi.h>
+
 /**
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
-void update_fields() {
+void update_fields(int rank, int size) {
+	int mystart = (rank == 0) ? 0 : 1;
+    int myend = (rank == size-1) ? Bz_size_y : Bz_size_y-1;
 	for (int i = 0; i < Bz_size_x; i++) {
-		for (int j = 0; j < Bz_size_y; j++) {
+		for (int j = mystart; j < myend; j++) {
 			Bz[i][j] = Bz[i][j] - (dt / dx) * (Ey[i+1][j] - Ey[i][j])
 				                + (dt / dy) * (Ex[i][j+1] - Ex[i][j]);
 		}
 	}
 
+	int mystartEx = (rank == 0) ? 0 : 1;
+    int myendEx = (rank == size-1) ? Ex_size_y : Ex_size_y-1;
 	for (int i = 0; i < Ex_size_x; i++) {
-		for (int j = 1; j < Ex_size_y-1; j++) {
+		for (int j = mystartEx + 1; j < myendEx-1; j++) {
 			Ex[i][j] = Ex[i][j] + (dt / (dy * eps * mu)) * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
+	int mystartEy = (rank == 0) ? 0 : 1;
+    int myendEy = (rank == size-1) ? Ey_size_y : Ey_size_y-1;
 	for (int i = 1; i < Ey_size_x-1; i++) {
-		for (int j = 0; j < Ey_size_y; j++) {
+		for (int j = mystartEy; j < myendEy; j++) {
 			Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i][j] - Bz[i-1][j]);
 		}
 	}
@@ -37,10 +45,10 @@ void update_fields() {
  * @brief Apply boundary conditions
  * 
  */
-void apply_boundary() {
+void apply_boundary(int rank, int size) {
 	for (int i = 0; i < Ex_size_x; i++) {
-		Ex[i][0] = -Ex[i][1];
-		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
+		if(rank == 0) Ex[i][0] = -Ex[i][1];
+		if(rank == size - 1) Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
 	}
 
 	for (int j = 0; j < Ey_size_y; j++) {
@@ -55,12 +63,15 @@ void apply_boundary() {
  * @param E_mag The returned total magnitude of the Electric field (E)
  * @param B_mag The returned total magnitude of the Magnetic field (B) 
  */
-void resolve_to_grid(double *E_mag, double *B_mag) {
+void resolve_to_grid(double *E_mag, double *B_mag, int rank, int size) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 
+
+	int mystartE = (rank == 0) ? 0 : 1;
+    int myendE = (rank == size-1) ? E_size_y : E_size_y-1;
 	for (int i = 1; i < E_size_x-1; i++) {
-		for (int j = 1; j < E_size_y-1; j++) {
+		for (int j = mystartE + 1; j < myendE-1; j++) { // removing ghost cells
 			E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
 			E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
 			//E[i][j][2] = 0.0; // in 2D we don't care about this dimension
@@ -69,8 +80,10 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 		}
 	}
 	
+	int mystartB = (rank == 0) ? 0 : 1;
+    int myendB = (rank == size-1) ? B_size_y : B_size_y-1;
 	for (int i = 1; i < B_size_x-1; i++) {
-		for (int j = 1; j < B_size_y-1; j++) {
+		for (int j = mystartB + 1; j < myendB-1; j++) { // removing ghost cells
 			//B[i][j][0] = 0.0; // in 2D we don't care about these dimensions
 			//B[i][j][1] = 0.0;
 			B[i][j][2] = (Bz[i-1][j] + Bz[i][j] + Bz[i][j-1] + Bz[i-1][j-1]) / 4.0;
@@ -78,6 +91,10 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 			*B_mag += sqrt(B[i][j][2] * B[i][j][2]);
 		}
 	}
+
+	// perform a sum reduction to help calculate the global mean value
+    MPI_Allreduce(MPI_IN_PLACE, B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 }
 
 /**
@@ -88,31 +105,37 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
  * @return int The return value of the application
  */
 int main(int argc, char *argv[]) {
+	// Initialize MPI
+	int rank, size;
+	MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	set_defaults();
 	parse_args(argc, argv);
 	setup();
 
-	printf("Running problem size %f x %f on a %d x %d grid.\n", lengthX, lengthY, X, Y);
+	if(rank == 0) printf("Running problem size %f x %f on a %d x %d grid.\n", lengthX, lengthY, X, Y);
 	
 	if (verbose) print_opts();
 	
-	allocate_arrays();
+	allocate_arrays(rank, size);
 
-	problem_set_up();
+	problem_set_up(rank, size);
 
 	// start at time 0
 	double t = 0.0;
 	int i = 0;
 	while (i < steps) {
-		apply_boundary();
-		update_fields();
+		apply_boundary(rank, size);
+		update_fields(rank, size);
 
 		t += dt;
 
 		if (i % output_freq == 0) {
 			double E_mag, B_mag;
-			resolve_to_grid(&E_mag, &B_mag);
-			printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
+			resolve_to_grid(&E_mag, &B_mag, rank, size);
+			if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 
 			if ((!no_output) && (enable_checkpoints))
 				write_checkpoint(i);
@@ -122,16 +145,19 @@ int main(int argc, char *argv[]) {
 	}
 
 	double E_mag, B_mag;
-	resolve_to_grid(&E_mag, &B_mag);
+	resolve_to_grid(&E_mag, &B_mag, rank, size);
 
-	printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
-	printf("Simulation complete.\n");
+	if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
+	if (rank == 0) printf("Simulation complete.\n");
 
 	if (!no_output) 
-		write_result();
+		if (rank == 0) write_result();
 
 	free_arrays();
-
+	
+	// Finalizing the MPI - which should return success / failure
+	MPI_Finalize();
+	
 	exit(0);
 }
 

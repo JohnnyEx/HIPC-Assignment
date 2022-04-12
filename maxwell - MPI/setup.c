@@ -41,19 +41,35 @@ void setup() {
  * @brief Allocate all of the arrays used for computation
  * 
  */
-void allocate_arrays() {
-	Ex_size_x = X; Ex_size_y = Y+1;
-	Ex = alloc_2d_array(X, Y+1);
-	Ey_size_x = X+1; Ey_size_y = Y;
-	Ey = alloc_2d_array(X+1, Y);
+void allocate_arrays(int rank, int size) {
+
+	// calculating Ex the start and end for parallel processors
+    int Exstartj = rank * ((Y+1)/size) - 1;
+    if (Exstartj < 0) Exstartj = 0;
+    int Exendj = (rank+1) * (Y+1/size);
+    if (Exendj >= Y) Exendj = Y;
+    int ExsizeJ = Exendj - Exstartj + 1;
+
+	// calculating Ey start and end for parallel processors
+	int Eystartj = rank * (Y/size) - 1;
+    if (Eystartj < 0) Eystartj = 0;
+    int Eyendj = (rank+1) * (Y/size);
+    if (Eyendj >= Y-1) Eyendj = Y - 1;
+    int Eysizej = Eyendj - Eystartj + 1;
+	//// Ey j values can be used for Bz as well
+
+	Ex_size_x = X; Ex_size_y = ExsizeJ;
+	Ex = alloc_2d_array(X, ExsizeJ);
+	Ey_size_x = X+1; Ey_size_y = Eysizej;
+	Ey = alloc_2d_array(X+1, Eysizej);
 	
-	Bz_size_x = X; Bz_size_y = Y;
-	Bz = alloc_2d_array(X, Y);
+	Bz_size_x = X; Bz_size_y = Eysizej;
+	Bz = alloc_2d_array(X, Eysizej);
 	
-	E_size_x = X+1; E_size_y = Y+1; E_size_z = 3;
+	E_size_x = X+1; E_size_y = ExsizeJ; E_size_z = 3;
 	E = alloc_3d_array(E_size_x, E_size_y, E_size_z);
 
-	B_size_x = X+1; B_size_y = Y+1; B_size_z = 3;
+	B_size_x = X+1; B_size_y = ExsizeJ; B_size_z = 3;
 	B = alloc_3d_array(B_size_x, B_size_y, B_size_z);
 }
 
@@ -73,9 +89,11 @@ void free_arrays() {
  * @brief Set up a guassian to curve around the centre
  * 
  */
-void problem_set_up() {
+void problem_set_up(int rank, int size) {
+	int mystart = (rank == 0) ? 0 : 1;
+    int myend = (rank == size-1) ? Ex_size_y : Ex_size_y-1;
     for (int i = 0; i < Ex_size_x; i++ ) {
-        for (int j = 0; j < Ex_size_y; j++) {
+        for (int j = mystart; j < myend; j++) {
             double xcen = lengthX / 2.0;
             double ycen = lengthY / 2.0;
             double xcoord = (i - xcen) * dx;
@@ -88,8 +106,10 @@ void problem_set_up() {
             Ex[i][j] = mag * tx;
 		}
 	}
+	int mystart = (rank == 0) ? 0 : 1;
+    int myend = (rank == size-1) ? Ey_size_y : Ey_size_y-1;
     for (int i = 0; i < Ey_size_x; i++ ) {
-        for (int j = 0; j < Ey_size_y; j++) {
+        for (int j = mystart; j < myend; j++) {
             double xcen = lengthX / 2.0;
             double ycen = lengthY / 2.0;
             double xcoord = i * dx;
