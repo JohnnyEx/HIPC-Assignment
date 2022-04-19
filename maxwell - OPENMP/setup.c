@@ -80,8 +80,7 @@ void problem_set_up() {
 	int j = 0;
     double xcen = lengthX / 2.0;
 	double ycen = lengthY / 2.0;
-	#pragma omp parallel for schedule(static) private(i,j)
-    for (i = 0; i < Ex_size_x; i++ ) {
+	for (i = 0; i < Ex_size_x; i++ ) {
         for (j = 0; j < Ex_size_y; j++) {
             double xcoord = (i - xcen) * dx;
             double ycoord = j * dy;
@@ -93,7 +92,6 @@ void problem_set_up() {
             Ex[i][j] = mag * tx;
 		}
 	}
-	#pragma omp parallel for schedule(static) private(i,j)
     for (i = 0; i < Ey_size_x; i++ ) {
         for (j = 0; j < Ey_size_y; j++) {
             double xcoord = i * dx;
