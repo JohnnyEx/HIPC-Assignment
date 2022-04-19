@@ -25,10 +25,10 @@ static struct option long_options[] = {
 	{"checkpoint", no_argument,       0, 'c'},
 	{"verbose",    no_argument,       0, 'v'},
 	{"help",       no_argument,       0, 'h'},
-    {"gridx",      required_argument, 0, "i"},
-    {"gridy",      required_argument, 0, "j"},
-    {"blockx",     required_argument, 0, "k"},
-    {"blocky",     required_argument, 0, "l"},
+    {"gridx",      required_argument, 0, 'i'},
+    {"gridy",      required_argument, 0, 'j'},
+    {"blockx",     required_argument, 0, 'k'},
+    {"blocky",     required_argument, 0, 'l'},
 	{0, 0, 0, 0}
 };
 

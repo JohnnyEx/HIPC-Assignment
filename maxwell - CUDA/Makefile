@@ -1,5 +1,5 @@
 CC=nvcc
-CFLAGS=-O3 
+CFLAGS=-lm
 LIBFLAGS=-g
 
 OBJDIR = obj
@@ -11,7 +11,7 @@ OBJ = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 all: directories maxwell
 
-obj/%.o: %.c
+obj/%.o: %.cu
 	$(CC) -c -o $@ $< $(CFLAGS) 
 
 maxwell: $(OBJ)
