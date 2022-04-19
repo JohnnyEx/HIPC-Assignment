@@ -73,7 +73,7 @@ void parse_args(int argc, char *argv[]) {
 	int n_specified = 0;
 	int t_specified = 0;
 
-	while ((c = getopt_long(argc, argv, "x:y:n:t:f:do:cvh:i:j:k:l", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "x:y:n:t:f:do:cvh:i:j:k:l:", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 'x':
 				X = atoi(optarg);
@@ -105,16 +105,16 @@ void parse_args(int argc, char *argv[]) {
 				verbose = 1;
 				break;
             case 'i':
-                cuda_consts.grid_x = atoi(optarg);
+                grid_x = atoi(optarg);
                 break;
             case 'j':
-                cuda_consts.grid_y = atoi(optarg);
+                grid_y = atoi(optarg);
                 break;
             case 'k':
-                cuda_consts.block_x = atoi(optarg);
+                block_x = atoi(optarg);
                 break;
             case 'l':
-                cuda_consts.block_y = atoi(optarg);
+                block_y = atoi(optarg);
                 break;
 			case '?':
             case 'h':
