@@ -44,6 +44,8 @@ int E_size_x, E_size_y, E_size_z;
 double *** E;
 int B_size_x, B_size_y, B_size_z;
 double *** B;
+double *** global_E;
+double *** global_B;
 
 /**
  * @brief Allocate a 2D array that is addressable using square brackets
