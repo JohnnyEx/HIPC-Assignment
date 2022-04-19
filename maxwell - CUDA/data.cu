@@ -43,7 +43,7 @@ void alloc_2d_array(int m, int n, double **array, size_t *pitch) {
  * 
  * @param array The 2D array to free
  */
-void free_2d_array(double ** array) {
+void free_2d_array(double * array) {
 	cudaFree(array[0]);
     cudaFree(array);
 }
