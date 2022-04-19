@@ -48,11 +48,11 @@ void setup() {
  */
 void allocate_arrays() {
     m_arrays.Ex_size_x = m_variables.X; m_arrays.Ex_size_y = m_variables.Y+1;
-    alloc_2d_cuda_array(m_variables.X, m_variables.Y+1, &m_arrays.Ex, &m_arrays.ex_pitch);
+    alloc_2d__array(m_variables.X, m_variables.Y+1, &m_arrays.Ex, &m_arrays.ex_pitch);
     m_arrays.Ey_size_x = m_variables.X+1; m_arrays.Ey_size_y = m_variables.Y;
-    alloc_2d_cuda_array(m_variables.X+1, m_variables.Y, &m_arrays.Ey, &m_arrays.ey_pitch);
+    alloc_2d_array(m_variables.X+1, m_variables.Y, &m_arrays.Ey, &m_arrays.ey_pitch);
     m_arrays.Bz_size_x = m_variables.X; m_arrays.Bz_size_y = m_variables.Y;
-    alloc_2d_cuda_array(m_variables.X, m_variables.Y, &m_arrays.Bz, &m_arrays.bz_pitch);
+    alloc_2d_array(m_variables.X, m_variables.Y, &m_arrays.Bz, &m_arrays.bz_pitch);
 
     m_arrays.E_size_x = m_variables.X+1; m_arrays.E_size_y = m_variables.Y+1; m_arrays.E_size_z = 3;
     alloc_3d_cuda_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z, &m_arrays.E, &m_arrays.e_pitch);
@@ -80,7 +80,7 @@ void free_arrays() {
  * @brief Set up a guassian to curve around the centre
  * 
  */
-__global__ void problem_set_up() {
+__global__ void problem_set_up(variables m_variables, arrays m_arrays) {
     double xcen = m_variables.lengthX / 2.0;
     double ycen = m_variables.lengthY / 2.0;
 
