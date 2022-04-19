@@ -18,6 +18,9 @@ struct variables m_variables;
 struct arrays m_arrays;
 struct cudaGraph graph;
 
+double *** host_E;
+double *** host_B;
+
 // Time to run for / or number of steps
 double T = 0.0001;
 int steps = 0;
