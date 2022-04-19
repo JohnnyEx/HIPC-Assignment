@@ -150,14 +150,14 @@ int main(int argc, char *argv[]) {
 		if (i % output_freq == 0) {
 			double E_mag = 0, B_mag = 0;
 			resolve_to_grid<<<grid, block>>>(d_E_mag_cudaV, d_B_mag_cudaV, m_arrays);
-            cudaMemcpy(E_mag_cudaV, d_E_mag_cudaV, total_threads * sizeof(double), cudaMemcpyDeviceToHost);
-            cudaMemcpy(B_mag_cudaV, d_B_mag_cudaV, total_threads * sizeof(double), cudaMemcpyDeviceToHost);
+            cudaMemcpy(E_mag_cudaV, d_E_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
+            cudaMemcpy(B_mag_cudaV, d_B_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
             for (int j = 0; j < noThreads; j++){
                 E_mag += E_mag_cudaV[j];
                 B_mag += B_mag_cudaV[j];
             }
 
-			printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
+			printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, m_variables.dt, E_mag, B_mag);
 
 			if ((!no_output) && (enable_checkpoints))
             {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
         B_mag += B_mag_cudaV[i];
     }
 
-	printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
+	printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, m_variables.dt, E_mag, B_mag);
 	printf("Simulation complete.\n");
 
 	if (!no_output) {
