@@ -88,7 +88,7 @@ void problem_set_up(int rank, int size) {
             double rlen = sqrt(rx*rx + ry*ry);
 			double tx = (rlen == 0) ? 0 : ry / rlen;
             double mag = exp(-400.0 * (rlen - (lengthX / 4.0)) * (rlen - (lengthX / 4.0)));
-            Ex[i][j] = mag * tx;
+            Ex[i+1][j] = mag * tx;
 		}
 	}
 	int mystart = (rank == 0) ? 0 : 1;
