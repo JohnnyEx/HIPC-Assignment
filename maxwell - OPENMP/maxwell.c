@@ -82,7 +82,6 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 	double b_mag = 0.0;
 
 	int i, j;
-	#pragma omp parallel for private (i,j) reduction (+:e_mag) schedule(static)
 	for (i = 1; i < E_size_x-1; i++) {
 		for (j = 1; j < E_size_y-1; j++) {
 			E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
@@ -92,7 +91,6 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 		}
 	}
 	
-	#pragma omp parallel for private (i,j) reduction (+:b_mag) schedule(static)
 	for (i = 1; i < B_size_x-1; i++) {
 		for (j = 1; j < B_size_y-1; j++) {
 			//B[i][j][0] = 0.0; // in 2D we don't care about these dimensions
