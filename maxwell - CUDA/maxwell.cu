@@ -15,13 +15,12 @@
 __global__ void update_fields() {
     int tidx = blockIdx.x*blockDim.x + threadIdx.x;
     int tidy = blockIdx.y*blockDim.y + threadIdx.y;
-    int cx_ex = Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction (keeping this same for all fields)
-    int cy_ey = Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
+    int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
+    int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
 
     for (int i = cx_ex * tidx; i < cx_ex * (tidx + 1); i++) {
         for (int j = cy_ey * tidy; j < cy_ey * (tidy + 1); j++) {
-            Bz[i * bz_pitch + j] = Bz[i * bz_pitch + j] - (dt / dx) * (Ey[(i+1) * ey_pitch + j] - Ey[i * ey_pitch + j])
-                                                 + (dt / dy) * (Ex[i * ex_pitch + j + 1] - Ex[i * ex_pitch + j]);
+            m_arrays.Bz[i * m_arrays.bz_pitch + j] = m_arrays.Bz[i * m_arrays.bz_pitch + j] - (m_variables.dt / m_variables.dx) * (m_arrays.Ey[(i+1) * m_arrays.ey_pitch + j] - m_arrays.Ey[i * m_arrays.ey_pitch + j]) + (m_variables.dt / m_variables.dy) * (m_arrays.Ex[i * m_arrays.ex_pitch + j + 1] - m_arrays.Ex[i * m_arrays.ex_pitch + j]);
         }
     }
 
@@ -29,7 +28,7 @@ __global__ void update_fields() {
         for (int j = cy_ey * tidy; j < cy_ey * (tidy + 1); j++) {
             if (tidy == 0 && j == 0)
                 continue;
-            Ex[i * ex_pitch + j] = Ex[i * ex_pitch + j] + (dt / (dy * constants.eps * constants.mu)) * (Bz[i * bz_pitch + j] - Bz[i * bz_pitch + j - 1]);
+            m_arrays.Ex[i * m_arrays.ex_pitch + j] = m_arrays.Ex[i * m_arrays.ex_pitch + j] + (m_variables.dt / (m_variables.dy * m_constants.eps * m_constants.mu)) * (m_arrays.Bz[i * m_arrays.bz_pitch + j] - m_arrays.Bz[i * m_arrays.bz_pitch + j - 1]);
         }
     }
 
@@ -37,7 +36,7 @@ __global__ void update_fields() {
         for (int j = cy_ey * tidy; j < cy_ey * (tidy + 1); j++) {
             if (tidx == 0 && i == 0)
                 continue;
-            Ey[i * ey_pitch + j] = Ey[i * ey_pitch + j] - (dt / (dx * constants.eps * constants.mu)) * (Bz[i * bz_pitch + j] - Bz[(i - 1) * bz_pitch + j]);
+            m_arrays.Ey[i * m_arrays.ey_pitch + j] = m_arrays.Ey[i * m_arrays.ey_pitch + j] - (m_variables.dt / (m_variables.dx * m_constants.eps * m_constants.mu)) * (m_arrays.Bz[i * m_arrays.bz_pitch + j] - m_arrays.Bz[(i - 1) * m_arrays.bz_pitch + j]);
         }
     }
 }
@@ -49,21 +48,21 @@ __global__ void update_fields() {
 __global__ void apply_boundary() {
     int tidx = blockIdx.x * blockDim.x + threadIdx.x;
     int tidy = blockIdx.y * blockDim.y + threadIdx.y;
-    int cx_ex = Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
-    int cy_ey = Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
+    int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
+    int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
 
-    for (int i = tidx * cx_ex; i < cx_ex * (tidx + 1); i++) {
+    for (int i = tidx * cpx_ex; i < cpx_ex * (tidx + 1); i++) {
         if (tidy == 0)
-            Ex[i * ex_pitch] = -Ex[i * ex_pitch + 1];
+            m_arrays.Ex[i * m_arrays.ex_pitch] = -m_arrays.Ex[i * m_arrays.ex_pitch + 1];
         if (tidy == gridDim.y * blockDim.y - 1)
-            Ex[i * ex_pitch + Ex_size_y - 1] = -Ex[i * ex_pitch + Ex_size_y - 2];
+            m_arrays.Ex[i * m_arrays.ex_pitch + m_arrays.Ex_size_y - 1] = -m_arrays.Ex[i * m_arrays.ex_pitch + m_arrays.Ex_size_y - 2];
     }
 
-    for (int j = tidy * cy_ey; j < cy_ey * (tidy + 1); j++) {
+    for (int j = tidy * cpy_ey; j < cpy_ey * (tidy + 1); j++) {
         if (tidx == 0)
-            Ey[j] = -Ey[ey_pitch + j];
+            m_arrays.Ey[j] = -m_arrays.Ey[m_arrays.ey_pitch + j];
         if (tidx == gridDim.x * blockDim.x - 1)
-            Ey[ey_pitch * (Ey_size_x - 1) + j] = -Ey[ey_pitch * (Ey_size_x - 2) + j];
+            m_arrays.Ey[m_arrays.ey_pitch * (m_arrays.Ey_size_x - 1) + j] = -m_arrays.Ey[m_arrays.ey_pitch * (m_arrays.Ey_size_x - 2) + j];
     }
 }
 
@@ -78,8 +77,8 @@ __global__ void resolve_to_grid(double *E_mag, double *B_mag) {
 	*B_mag = 0.0;
     int tidx = blockIdx.x*blockDim.x + threadIdx.x;
     int tidy = blockIdx.y*blockDim.y + threadIdx.y;
-    int cx_x = (E_size_x - 1) / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
-    int cy_y = (E_size_y - 1) / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
+    int cx_x = (m_arrays.E_size_x - 1) / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
+    int cy_y = (m_arrays.E_size_y - 1) / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
     E_mag[tidy * gridDim.x * blockDim.x + tidx] = 0.0;
     B_mag[tidy * gridDim.x * blockDim.x + tidx] = 0.0;
 
@@ -87,11 +86,11 @@ __global__ void resolve_to_grid(double *E_mag, double *B_mag) {
         for (int j = cy_y * tidy; j < cy_y * (tidy + 1); j++) {
             if ((tidx == 0 && i == 0) || (tidy == 0 && j == 0))
                 continue;
-            E[i * e_pitch + j * E_size_z] = (Ex[(i-1) * ex_pitch + j] + Ex[i * ex_pitch + j]) / 2.0;
-            E[i * e_pitch + j * E_size_z + 1] = (Ey[i * ey_pitch + j - 1] + Ey[i * ey_pitch + j]) / 2.0;
+            m_arrays.E[i * m_arrays.e_pitch + j * m_arrays.E_size_z] = (m_arrays.Ex[(i-1) * m_arrays.ex_pitch + j] + m_arrays.Ex[i * m_arrays.ex_pitch + j]) / 2.0;
+            m_arrays.E[i * m_arrays.e_pitch + j * m_arrays.E_size_z + 1] = (m_arrays.Ey[i * m_arrays.ey_pitch + j - 1] + m_arrays.Ey[i * m_arrays.ey_pitch + j]) / 2.0;
 
-            E_mag[tidy * gridDim.x * blockDim.x + tidx] += sqrt((E[i * e_pitch + j * E_size_z] * E[i * e_pitch + j * E_size_z])
-                                                                + (E[i * e_pitch + j * E_size_z + 1] * E[i * e_pitch + j * E_size_z + 1]));
+            E_mag[tidy * gridDim.x * blockDim.x + tidx] += sqrt((m_arrays.E[i * m_arrays.e_pitch + j * m_arrays.E_size_z] * m_arrays.E[i * m_arrays.e_pitch + j * m_arrays.E_size_z])
+                                                            + (m_arrays.E[i * m_arrays.e_pitch + j * m_arrays.E_size_z + 1] * m_arrays.E[i *m_arrays. e_pitch + j * m_arrays.E_size_z + 1]));
         }
     }
 
@@ -99,10 +98,10 @@ __global__ void resolve_to_grid(double *E_mag, double *B_mag) {
         for (int j = cy_y * tidy; j < cy_y * (tidy + 1); j++) {
             if ((tidx == 0 && i == 0) || (tidy == 0 && j == 0))
                 continue;
-            B[i * b_pitch + j * B_size_z + 2] = (Bz[(i-1) * bz_pitch + j] + Bz[i * bz_pitch + j]
-                                                                      + Bz[i * bz_pitch + j - 1] + Bz[(i-1) * bz_pitch + j - 1]) / 4.0;
+            m_arrays.B[i * m_arrays.b_pitch + j * m_arrays.B_size_z + 2] = (m_arrays.Bz[(i-1) * m_arrays.bz_pitch + j] + m_arrays.Bz[i * m_arrays.bz_pitch + j] + m_arrays.Bz[i * m_arrays.bz_pitch + j - 1]
+                                                                            + m_arrays.Bz[(i-1) * m_arrays.bz_pitch + j - 1]) / 4.0;
 
-            B_mag[tidy * gridDim.x * blockDim.x + tidx] += sqrt(B[i * b_pitch + j * B_size_z + 2] * B[i * b_pitch + j * B_size_z + 2]);
+            B_mag[tidy * gridDim.x * blockDim.x + tidx] += sqrt(m_arrays.B[i * m_arrays.b_pitch + j * m_arrays.B_size_z + 2] * m_arrays.B[i * m_arrays.b_pitch + j * m_arrays.B_size_z + 2]);
         }
     }
 }

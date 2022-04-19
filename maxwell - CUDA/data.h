@@ -1,35 +1,38 @@
 #ifndef DATA_H
 #define DATA_H
 
-extern const double c; // Speed of light
-extern const double mu; // permiability of free space
-extern const double eps; // permitivitty of free space
+struct constants {
+    const double c;
+    const double mu;
+    const double eps;
+    const double cfl;
+};
 
-// must be less than 1/sqrt(2) in 2D
-extern const double cfl;
-
-// Grid size in metres
-extern double lengthX;
-extern double lengthY;
-
-// Discretisation in cells
-extern int X;
-extern int Y;
-
-// dx, dy, dt constants.
-extern double dx;
-extern double dy;
-extern double dt;
+struct variables {
+    double lengthX;
+    double lengthY;
+    int X;
+    int Y;
+    double dx;
+    double dy;
+    double dt;
+};
 
 // Time to run for / or number of steps
 extern double T;
 extern int steps;
 
-// Cuda
-extern int grid_x;
-extern int grid_y;
-extern int block_x;
-extern int block_y;
+// Cuda variable
+struct cudaGraph {
+    int grid_x;
+    int grid_y;
+    int block_x;
+    int block_y;
+};
+
+extern struct constants m_constants;
+extern struct variables m_variables;
+extern struct cudaGraph graph;
 
 // x = Ex values
 // o = Ey values
@@ -51,23 +54,25 @@ extern int block_y;
 //    +---x---+---x---+---x---+---x---+---x---+
 //(0,0)  x -> 
 
-extern int Ex_size_x, Ex_size_y;
-extern double ** Ex;
-extern size_t ex_pitch;
-extern int Ey_size_x, Ey_size_y;
-extern double ** Ey;
-extern size_t ey_pitch;
-extern int Bz_size_x, Bz_size_y;
-extern double ** Bz;
-extern size_t bz_pitch;
+struct arrays {
+    int Ex_size_x, Ex_size_y;
+    double * Ex;
+    size_t ex_pitch;
+    int Ey_size_x, Ey_size_y;
+    double * Ey;
+    size_t ey_pitch;
+    int Bz_size_x, Bz_size_y;
+    double * Bz;
+    size_t bz_pitch;
+    int E_size_x, E_size_y, E_size_z;
+    double * E;
+    size_t e_pitch;
+    int B_size_x, B_size_y, B_size_z;
+    double * B;
+    size_t b_pitch;
+};
 
-// These array are only needed for visualisation
-extern int E_size_x, E_size_y, E_size_z;
-extern double *** E;
-extern size_t e_pitch;
-extern int B_size_x, B_size_y, B_size_z;
-extern double *** B;
-extern size_t b_pitch;
+extern arrays m_arrays;
 
 extern double *** host_E;
 extern double *** host_B;

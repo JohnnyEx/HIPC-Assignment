@@ -12,16 +12,16 @@
  * 
  */
 void set_defaults() {
-	lengthX = 1.0;
-	lengthY = 1.0;
+	m_variables.lengthX = 1.0;
+	m_variables.lengthY = 1.0;
 
-	X = 4000;
-	Y = 4000;
+	m_variables.X = 4000;
+	m_variables.Y = 4000;
 
-    grid_x = 10;
-    grid_y = 10;
-    block_x = 50;
-    block_y = 50;
+    graph.grid_x = 10;
+    graph.grid_y = 10;
+    graph.block_x = 50;
+    graph.block_y = 50;
 
 	T = 1.6e-9;
 
@@ -33,13 +33,13 @@ void set_defaults() {
  * 
  */
 void setup() {
-	dx = lengthX / X;
-	dy = lengthY / Y;
+	m_variables.dx = m_variables.lengthX / m_variables.X;
+	m_variables.dy = m_variables.lengthY / m_variables.Y;
 
-	dt = cfl * (dx > dy ? dx : dy) / c;
+	m_variables.dt = m_constants.cfl * (m_variables.dx > m_variables.dy ? m_variables.dx : m_variables.dy) / m_constants.c;
 	
 	if (steps == 0) // only set this if steps hasn't been specified
-		steps = (int) (T / dt);
+		steps = (int) (T / m_variables.dt);
 }
 
 /**
@@ -47,21 +47,19 @@ void setup() {
  * 
  */
 void allocate_arrays() {
-	Ex_size_x = X; Ex_size_y = Y+1;
-	alloc_2d_array(X, Y+1, Ex, ex_pitch);
-	Ey_size_x = X+1; Ey_size_y = Y;
-	alloc_2d_array(X+1, Y, Ey, ey_pitch);
-	
-	Bz_size_x = X; Bz_size_y = Y;
-	alloc_2d_array(X, Y), Bz, bz_pitch;
-	
-	E_size_x = X+1; E_size_y = Y+1; E_size_z = 3;
-	E = alloc_3d_cuda_array(E_size_x, E_size_y, E_size_z, E, e_pitch);
-    host_E = alloc_3d_array(E_size_x, E_size_y, E_size_z);
+    m_arrays.Ex_size_x = m_variables.X; m_arrays.Ex_size_y = m_variables.Y+1;
+    alloc_2d_cuda_array(m_variables.X, m_variables.Y+1, &m_arrays.Ex, &m_arrays.ex_pitch);
+    m_arrays.Ey_size_x = m_variables.X+1; m_arrays.Ey_size_y = m_variables.Y;
+    alloc_2d_cuda_array(m_variables.X+1, m_variables.Y, &m_arrays.Ey, &m_arrays.ey_pitch);
+    m_arrays.Bz_size_x = m_variables.X; m_arrays.Bz_size_y = m_variables.Y;
+    alloc_2d_cuda_array(m_variables.X, m_variables.Y, &m_arrays.Bz, &m_arrays.bz_pitch);
 
-	B_size_x = X+1; B_size_y = Y+1; B_size_z = 3;
-    host_B = alloc_3d_array(B_size_x, B_size_y, B_size_z);
-	alloc_3d_cuda_array(B_size_x, B_size_y, B_size_z, B, b_pitch);
+    m_arrays.E_size_x = m_variables.X+1; m_arrays.E_size_y = m_variables.Y+1; m_arrays.E_size_z = 3;
+    alloc_3d_cuda_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z, &m_arrays.E, &m_arrays.e_pitch);
+    host_E = alloc_3d_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z);
+    m_arrays.B_size_x = m_variables.X+1; m_arrays.B_size_y = m_variables.Y+1; m_arrays.B_size_z = 3;
+    alloc_3d_cuda_array(m_arrays.B_size_x, m_arrays.B_size_y, m_arrays.B_size_z, &m_arrays.B, &m_arrays.b_pitch);
+    host_B = alloc_3d_array(m_arrays.B_size_x, m_arrays.B_size_y, m_arrays.B_size_z);
 }
 
 /**
@@ -83,32 +81,31 @@ void free_arrays() {
  * 
  */
 __global__ void problem_set_up() {
-    for (int i = 0; i < Ex_size_x; i++ ) {
-        for (int j = 0; j < Ex_size_y; j++) {
-            double xcen = lengthX / 2.0;
-            double ycen = lengthY / 2.0;
-            double xcoord = (i - xcen) * dx;
-            double ycoord = j * dy;
+    double xcen = m_variables.lengthX / 2.0;
+    double ycen = m_variables.lengthY / 2.0;
+
+    for (int i = 0; i < m_arrays.Ex_size_x; i++ ) {
+        for (int j = 0; j < m_arrays.Ex_size_y; j++) {
+            double xcoord = (i - xcen) * m_variables.dx;
+            double ycoord = j * m_variables.dy;
             double rx = xcen - xcoord;
             double ry = ycen - ycoord;
             double rlen = sqrt(rx*rx + ry*ry);
-			double tx = (rlen == 0) ? 0 : ry / rlen;
-            double mag = exp(-400.0 * (rlen - (lengthX / 4.0)) * (rlen - (lengthX / 4.0)));
-            Ex[i * ex_pitch + j] = mag * tx;
-		}
-	}
-    for (int i = 0; i < Ey_size_x; i++ ) {
-        for (int j = 0; j < Ey_size_y; j++) {
-            double xcen = lengthX / 2.0;
-            double ycen = lengthY / 2.0;
-            double xcoord = i * dx;
-            double ycoord = (j - ycen) * dy;
+            double tx = (rlen == 0) ? 0 : ry / rlen;
+            double mag = exp(-400.0 * (rlen - (m_variables.lengthX / 4.0)) * (rlen - (m_variables.lengthY / 4.0)));
+            m_arrays.Ex[i * m_arrays.ex_pitch + j] = mag * tx;
+        }
+    }
+    for (int i = 0; i < m_arrays.Ey_size_x; i++ ) {
+        for (int j = 0; j < m_arrays.Ey_size_y; j++) {
+            double xcoord = i * m_variables.dx;
+            double ycoord = (j - ycen) * m_variables.dy;
             double rx = xcen - xcoord;
             double ry = ycen - ycoord;
             double rlen = sqrt(rx*rx + ry*ry);
             double ty = (rlen == 0) ? 0 : -rx / rlen;
-			double mag = exp(-400.0 * (rlen - (lengthY / 4.0)) * (rlen - (lengthY / 4.0)));
-            Ey[i * ey_pitch + j] = mag * ty;
-		}
-	}
+            double mag = exp(-400.0 * (rlen - (m_variables.lengthY / 4.0)) * (rlen - (m_variables.lengthY / 4.0)));
+            m_arrays.Ey[i*m_arrays.ey_pitch + j] = mag * ty;
+        }
+    }
 }

@@ -6,46 +6,21 @@
 #include "vtk.h"
 #include "data.h"
 
-const double c = 299792458; // Speed of light
-const double mu = 4.0 * M_PI * 1.0e-7; // permiability of free space
-const double eps = 1.0 / (c * c * mu); // permitivitty of free space
+struct constants m_constants = {
+        .c = 299792458; // Speed of light
+        .mu = 4.0 * M_PI * 1.0e-7; // permiability of free space
+        .eps = 1.0 / (c * c * mu); // permitivitty of free space
+        .cfl = 0.6363961031;
 
-// must be less than 1/sqrt(2) in 2D
-//const double cfl = 0.9 / sqrt(2);
-const double cfl = 0.6363961031;
+};
 
-// Grid size in metres
-double lengthX;
-double lengthY;
-
-// Discretisation in cells
-int X;
-int Y;
-
-// dx, dy, dt constants.
-double dx;
-double dy;
-double dt = 0.0;
+struct variables m_variables;
+struct arrays m_arrays;
+struct cudaGraph graph;
 
 // Time to run for / or number of steps
 double T = 0.0001;
 int steps = 0;
-
-// Grids used for Yee grid computation
-int Ex_size_x, Ex_size_y;
-double ** Ex;
-int Ey_size_x, Ey_size_y;
-double ** Ey;
-int Bz_size_x, Bz_size_y;
-double ** Bz;
-// Resolved grids
-int E_size_x, E_size_y, E_size_z;
-double *** E;
-int B_size_x, B_size_y, B_size_z;
-double *** B;
-double *** host_E;
-double *** host_B;
-
 
 /**
  * @brief Allocate a 2D array that is addressable using square brackets - now this is a Cuda one
@@ -56,7 +31,7 @@ double *** host_B;
  * @param pitch The pitch value that will be calculated of the array given in case
  */
 void alloc_2d_array(int m, int n, double **array, size_t *pitch) {
-  	cudaMallocPitch((void **)array, pitch, n*sizeof(double), m);
+  	cudaMallocPitch((void **)array, pitch, n * sizeof(double), m);
     *pitch = (*pitch) / sizeof (double);
 }
 
