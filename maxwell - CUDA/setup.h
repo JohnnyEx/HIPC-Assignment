@@ -5,6 +5,6 @@ void set_defaults();
 void setup();
 void allocate_arrays();
 void free_arrays();
-void problem_set_up();
+__global__ void problem_set_up();
 
 #endif

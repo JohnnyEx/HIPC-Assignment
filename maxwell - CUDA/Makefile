@@ -1,6 +1,6 @@
-CC=gcc
+CC=nvcc
 CFLAGS=-O3 
-LIBFLAGS=-lm
+LIBFLAGS=-g
 
 OBJDIR = obj
 
@@ -20,6 +20,7 @@ maxwell: $(OBJ)
 clean:
 	rm -Rf $(OBJDIR)
 	rm -f maxwell
+	rm -f maxwell.vtk
 
 directories: $(OBJDIR)
 

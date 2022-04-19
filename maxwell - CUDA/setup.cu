@@ -17,7 +17,12 @@ void set_defaults() {
 
 	X = 4000;
 	Y = 4000;
-	
+
+    grid_x = 10;
+    grid_y = 10;
+    block_x = 50;
+    block_y = 50;
+
 	T = 1.6e-9;
 
 	set_default_base();
@@ -43,18 +48,20 @@ void setup() {
  */
 void allocate_arrays() {
 	Ex_size_x = X; Ex_size_y = Y+1;
-	Ex = alloc_2d_array(X, Y+1);
+	alloc_2d_array(X, Y+1, Ex, ex_pitch);
 	Ey_size_x = X+1; Ey_size_y = Y;
-	Ey = alloc_2d_array(X+1, Y);
+	alloc_2d_array(X+1, Y, Ey, ey_pitch);
 	
 	Bz_size_x = X; Bz_size_y = Y;
-	Bz = alloc_2d_array(X, Y);
+	alloc_2d_array(X, Y), Bz, bz_pitch;
 	
 	E_size_x = X+1; E_size_y = Y+1; E_size_z = 3;
-	E = alloc_3d_array(E_size_x, E_size_y, E_size_z);
+	E = alloc_3d_cuda_array(E_size_x, E_size_y, E_size_z, E, e_pitch);
+    host_E = alloc_3d_array(E_size_x, E_size_y, E_size_z);
 
 	B_size_x = X+1; B_size_y = Y+1; B_size_z = 3;
-	B = alloc_3d_array(B_size_x, B_size_y, B_size_z);
+    host_B = alloc_3d_array(B_size_x, B_size_y, B_size_z);
+	alloc_3d_cuda_array(B_size_x, B_size_y, B_size_z, B, b_pitch);
 }
 
 /**
@@ -65,15 +72,17 @@ void free_arrays() {
 	free_2d_array(Ex);
 	free_2d_array(Ey);
 	free_2d_array(Bz);
-	free_3d_array(E);
-	free_3d_array(B);
+    free_3d_cuda_array(E);
+    free_3d_cuda_array(B);
+	free_3d_array(host_E);
+	free_3d_array(host_B);
 }
 
 /**
  * @brief Set up a guassian to curve around the centre
  * 
  */
-void problem_set_up() {
+__global__ void problem_set_up() {
     for (int i = 0; i < Ex_size_x; i++ ) {
         for (int j = 0; j < Ex_size_y; j++) {
             double xcen = lengthX / 2.0;
@@ -85,7 +94,7 @@ void problem_set_up() {
             double rlen = sqrt(rx*rx + ry*ry);
 			double tx = (rlen == 0) ? 0 : ry / rlen;
             double mag = exp(-400.0 * (rlen - (lengthX / 4.0)) * (rlen - (lengthX / 4.0)));
-            Ex[i][j] = mag * tx;
+            Ex[i * ex_pitch + j] = mag * tx;
 		}
 	}
     for (int i = 0; i < Ey_size_x; i++ ) {
@@ -99,7 +108,7 @@ void problem_set_up() {
             double rlen = sqrt(rx*rx + ry*ry);
             double ty = (rlen == 0) ? 0 : -rx / rlen;
 			double mag = exp(-400.0 * (rlen - (lengthY / 4.0)) * (rlen - (lengthY / 4.0)));
-            Ey[i][j] = mag * ty;
+            Ey[i * ey_pitch + j] = mag * ty;
 		}
 	}
 }

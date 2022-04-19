@@ -25,6 +25,10 @@ static struct option long_options[] = {
 	{"checkpoint", no_argument,       0, 'c'},
 	{"verbose",    no_argument,       0, 'v'},
 	{"help",       no_argument,       0, 'h'},
+    {"gridx",      required_argument, 0, "i"},
+    {"gridy",      required_argument, 0, "j"},
+    {"blockx",     required_argument, 0, "k"},
+    {"blocky",     required_argument, 0, "l"},
 	{0, 0, 0, 0}
 };
 
@@ -47,7 +51,11 @@ void print_help(char *progname) {
 	printf("  -c, --checkpoint        Enable checkpointing, checkpoints will be in BASENAME-ITERATION.vtk\n");
 	printf("  -v, --verbose           Set verbose output\n");
 	printf("  -h, --help              Print this message and exit\n");
-	printf("\n");
+	printf("  -i, --gridx             Set the CUDA grid size for X axis\n");
+    printf("  -j, --gridy             Set CUDA grid size Y\n");
+    printf("  -k, --blockx            Set CUDA block size X\n");
+    printf("  -l, --blocky            Set CUDA block size Y\n");
+    printf("\n");
 	printf("Report bugs to <steven.wright@york.ac.uk>\n");
 }
 
@@ -65,7 +73,7 @@ void parse_args(int argc, char *argv[]) {
 	int n_specified = 0;
 	int t_specified = 0;
 
-	while ((c = getopt_long(argc, argv, "x:y:n:t:f:do:cvh", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "x:y:n:t:f:do:cvh:i:j:k:l", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 'x':
 				X = atoi(optarg);
@@ -96,6 +104,18 @@ void parse_args(int argc, char *argv[]) {
 			case 'v':
 				verbose = 1;
 				break;
+            case 'i':
+                cuda_consts.grid_x = atoi(optarg);
+                break;
+            case 'j':
+                cuda_consts.grid_y = atoi(optarg);
+                break;
+            case 'k':
+                cuda_consts.block_x = atoi(optarg);
+                break;
+            case 'l':
+                cuda_consts.block_y = atoi(optarg);
+                break;
 			case '?':
             case 'h':
 				print_help(argv[0]);
@@ -126,6 +146,7 @@ void print_opts() {
 	printf("  enable_checkpoints = %14d\n", enable_checkpoints);
 	printf("  basename           = %s\n", get_basename());
     printf("  verbose            = %14d\n", verbose);
+    printf("  cuda grid size X   = to be added\n" );
     printf("=======================================\n");
     //exit(1);
 }

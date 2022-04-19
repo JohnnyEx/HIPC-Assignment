@@ -38,39 +38,36 @@ int Ey_size_x, Ey_size_y;
 double ** Ey;
 int Bz_size_x, Bz_size_y;
 double ** Bz;
-
 // Resolved grids
 int E_size_x, E_size_y, E_size_z;
 double *** E;
 int B_size_x, B_size_y, B_size_z;
 double *** B;
+double *** host_E;
+double *** host_B;
+
 
 /**
- * @brief Allocate a 2D array that is addressable using square brackets
+ * @brief Allocate a 2D array that is addressable using square brackets - now this is a Cuda one
  * 
  * @param m The first dimension of the array
  * @param n The second dimension of the array
- * @return double** A 2D array
+ * @param array The array that will be populated and will be allocated the space necessary to do so
+ * @param pitch The pitch value that will be calculated of the array given in case
  */
-double **alloc_2d_array(int m, int n) {
-  	double **x;
-  	int i;
-
-  	x = (double **)malloc(m*sizeof(double *));
-  	x[0] = (double *)calloc(m*n,sizeof(double));
-  	for ( i = 1; i < m; i++ )
-    	x[i] = &x[0][i*n];
-	return x;
+void alloc_2d_array(int m, int n, size_t *pitch) {
+  	cudaMallocPitch((void **)array, pitch, n*sizeof(double), m);
+    *pitch = (*pitch) / sizeof (double);
 }
 
 /**
- * @brief Free a 2D array
+ * @brief Free a 2D array - now cuda
  * 
  * @param array The 2D array to free
  */
 void free_2d_array(double ** array) {
-	free(array[0]);
-	free(array);
+	cudaFree(array[0]);
+    cudaFree(array);
 }
 
 /**
@@ -108,3 +105,27 @@ void free_3d_array(double*** array) {
 	free(array[0]);
 	free(array);
 }
+
+/**
+ * @brief Free a 3D CUDA array
+ *
+ * @param array The 3D array to free
+ */
+void free_3d_cuda_array(double* array) {
+    cudaFree(array);
+}
+
+/**
+ * @brief Allocate a 3D array that is addressable using square brackets - CUDA NOW
+ *
+ * @param m The first dimension of the array
+ * @param n The second dimension of the array
+ * @param o The third dimension of the array
+ * @param array The arraay that needs to be allocated
+ * @parm pitch can be read above
+ */
+void alloc_3d_cuda_array(int m, int n, int o, double **array, size_t *pitch) {
+    cudaMallocPitch((void **)array, pitch, n*o*sizeof(double), m);
+    *pitch = (*pitch) / sizeof(double);
+}
+
