@@ -78,8 +78,8 @@ extern double *** host_E;
 extern double *** host_B;
 
 void alloc_2d_array(int m, int n, double **array, size_t *pitch);
-void free_2d_array(double ** array);
-void alloc_3d_cuda_array(int m, int n, int o, size_t *pitch);
+void free_2d_array(double *array);
+void alloc_3d_cuda_array(int m, int n, int o, double **array, size_t *pitch);
 void free_3d_cuda_array(double *array);
 double ***alloc_3d_array(int m, int n, int o);
 void free_3d_array(double*** array);
