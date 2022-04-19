@@ -51,14 +51,14 @@ __global__ void apply_boundary(arrays m_arrays) {
     int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
     int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
 
-    for (int i = tidx * cpx_ex; i < cpx_ex * (tidx + 1); i++) {
+    for (int i = tidx * cx_ex; i < cx_ex * (tidx + 1); i++) {
         if (tidy == 0)
             m_arrays.Ex[i * m_arrays.ex_pitch] = -m_arrays.Ex[i * m_arrays.ex_pitch + 1];
         if (tidy == gridDim.y * blockDim.y - 1)
             m_arrays.Ex[i * m_arrays.ex_pitch + m_arrays.Ex_size_y - 1] = -m_arrays.Ex[i * m_arrays.ex_pitch + m_arrays.Ex_size_y - 2];
     }
 
-    for (int j = tidy * cpy_ey; j < cpy_ey * (tidy + 1); j++) {
+    for (int j = tidy * cy_ey; j < cy_ey * (tidy + 1); j++) {
         if (tidx == 0)
             m_arrays.Ey[j] = -m_arrays.Ey[m_arrays.ey_pitch + j];
         if (tidx == gridDim.x * blockDim.x - 1)
@@ -118,24 +118,24 @@ int main(int argc, char *argv[]) {
 	parse_args(argc, argv);
 	setup();
 
-	printf("Running problem size %f x %f on a %d x %d grid.\n", lengthX, lengthY, X, Y);
+	printf("Running problem size %f x %f on a %d x %d grid.\n", m_variables.lengthX, m_variables.lengthY, m_variables.X, m_variables.Y);
 	
 	if (verbose) print_opts();
 	
 	allocate_arrays();
 
     // Cuda setup
-    dim3 block = dim3(block_x, block_y);
-    dim3 grid = dim3(grid_x, grid_y);
+    dim3 block = dim3(graph.block_x, graph.block_y);
+    dim3 grid = dim3(graph.grid_x, graph.grid_y);
     int noThreads = grid.x * block.x * grid.y  * block.y;
-	problem_set_up<<<1,1>>>(m_arrays, m_variables);
+	problem_set_up<<<1,1>>>(m_variables, m_arrays);
     double *E_mag_cudaV = (double *) calloc(noThreads, sizeof(double));
     double *B_mag_cudaV = (double *) calloc(noThreads, sizeof(double));
 	double *d_E_mag_cudaV, *d_B_mag_cudaV;
     cudaMalloc(&d_E_mag_cudaV, noThreads * sizeof(double));
     cudaMalloc(&d_B_mag_cudaV, noThreads * sizeof(double));
-    long e_pitch_host = E_size_y * E_size_z * sizeof(double);
-    long b_pitch_host = B_size_y * B_size_z * sizeof(double);
+    long e_pitch_host = m_arrays.E_size_y * m_arrays.E_size_z * sizeof(double);
+    long b_pitch_host = m_arrays.B_size_y * m_arrays.B_size_z * sizeof(double);
 
 
     // start at time 0
@@ -145,13 +145,13 @@ int main(int argc, char *argv[]) {
 		apply_boundary<<<grid, block>>>(m_arrays);
 		update_fields<<<grid, block>>>(m_constants, m_arrays, m_variables);
 
-		t += dt;
+		t += m_variables.dt;
 
 		if (i % output_freq == 0) {
 			double E_mag = 0, B_mag = 0;
 			resolve_to_grid<<<grid, block>>>(d_E_mag_cudaV, d_B_mag_cudaV, m_arrays);
-            cudaMemcy(E_mag_cudaV, d_E_mag_cudaV, total_threads * sizeof(double), cudaMemcyDeviceToHost);
-            cudaMemcy(B_mag_cudaV, d_B_mag_cudaV, total_threads * sizeof(double), cudaMemcyDeviceToHost);
+            cudaMemcpy(E_mag_cudaV, d_E_mag_cudaV, total_threads * sizeof(double), cudaMemcpyDeviceToHost);
+            cudaMemcpy(B_mag_cudaV, d_B_mag_cudaV, total_threads * sizeof(double), cudaMemcpyDeviceToHost);
             for (int j = 0; j < noThreads; j++){
                 E_mag += E_mag_cudaV[j];
                 B_mag += B_mag_cudaV[j];
@@ -161,8 +161,8 @@ int main(int argc, char *argv[]) {
 
 			if ((!no_output) && (enable_checkpoints))
             {
-                cudaMemcy2D(&host_E[0][0][0], e_pitch_host, E, e_pitch * sizeof(double), e_pitch_host, E_size_x, cudaMemcyDeviceToHost);
-                cudaMemcy2D(&host_B[0][0][0], b_pitch_host, B, b_pitch * sizeof(double), b_pitch_host, B_size_x, cudaMemcyDeviceToHost);
+                cudaMemcpy2D(&host_E[0][0][0], e_pitch_host, m_arrays.E, m_arrays.e_pitch * sizeof(double), e_pitch_host, m_arrays.E_size_x, cudaMemcpyDeviceToHost);
+                cudaMemcpy2D(&host_B[0][0][0], b_pitch_host, m_arrays.B, m_arrays.b_pitch * sizeof(double), b_pitch_host, m_arrays.B_size_x, cudaMemcpyDeviceToHost);
                 write_checkpoint(i);
             }
 
@@ -173,8 +173,8 @@ int main(int argc, char *argv[]) {
 
 	double E_mag, B_mag;
 	resolve_to_grid<<<grid, block>>>(&E_mag, &B_mag, m_arrays);
-    cudaMemcy(E_mag_cudaV, d_E_mag_cudaV, noThreads * sizeof(double), cudaMemcyDeviceToHost);
-    cudaMemcy(B_mag_cudaV, d_B_mag_cudaV, noThreads * sizeof(double), cudaMemcyDeviceToHost);
+    cudaMemcpy(E_mag_cudaV, d_E_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(B_mag_cudaV, d_B_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
     for (int i = 0; i < noThreads; i++){
         E_mag += E_mag_cudaV[i];
         B_mag += B_mag_cudaV[i];
@@ -184,8 +184,8 @@ int main(int argc, char *argv[]) {
 	printf("Simulation complete.\n");
 
 	if (!no_output) {
-        cudaMemcy2D(&host_E[0][0][0], e_pitch_host, E, e_pitch * sizeof(double), e_pitch_host, E_size_x, cudaMemcyDeviceToHost);
-        cudaMemcy2D(&host_B[0][0][0], b_pitch_host, B, b_pitch * sizeof(double), b_pitch_host, B_size_x, cudaMemcyDeviceToHost);
+        cudaMemcpy2D(&host_E[0][0][0], e_pitch_host, m_arrays.E, m_arrays.e_pitch * sizeof(double), e_pitch_host, m_arrays.E_size_x, cudaMemcpyDeviceToHost);
+        cudaMemcpy2D(&host_B[0][0][0], b_pitch_host, m_arrays.B, m_arrays.b_pitch * sizeof(double), b_pitch_host, m_arrays.B_size_x, cudaMemcpyDeviceToHost);
         write_result();
     }
     
