@@ -48,17 +48,17 @@ void setup() {
  */
 void allocate_arrays() {
     m_arrays.Ex_size_x = m_variables.X; m_arrays.Ex_size_y = m_variables.Y+1;
-    alloc_2d__array(m_variables.X, m_variables.Y+1, &m_arrays.Ex, &m_arrays.ex_pitch);
+    alloc_2d_array(m_variables.X, m_variables.Y+1, &m_arrays.Ex, &m_arrays.ex_pitch);
     m_arrays.Ey_size_x = m_variables.X+1; m_arrays.Ey_size_y = m_variables.Y;
     alloc_2d_array(m_variables.X+1, m_variables.Y, &m_arrays.Ey, &m_arrays.ey_pitch);
     m_arrays.Bz_size_x = m_variables.X; m_arrays.Bz_size_y = m_variables.Y;
     alloc_2d_array(m_variables.X, m_variables.Y, &m_arrays.Bz, &m_arrays.bz_pitch);
 
     m_arrays.E_size_x = m_variables.X+1; m_arrays.E_size_y = m_variables.Y+1; m_arrays.E_size_z = 3;
-    alloc_3d_cuda_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z, &m_arrays.E, &m_arrays.e_pitch);
+    m_arrays.E = alloc_3d_cuda_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z, &m_arrays.e_pitch);
     host_E = alloc_3d_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z);
     m_arrays.B_size_x = m_variables.X+1; m_arrays.B_size_y = m_variables.Y+1; m_arrays.B_size_z = 3;
-    alloc_3d_cuda_array(m_arrays.B_size_x, m_arrays.B_size_y, m_arrays.B_size_z, &m_arrays.B, &m_arrays.b_pitch);
+    m_arrays.B = alloc_3d_cuda_array(m_arrays.B_size_x, m_arrays.B_size_y, m_arrays.B_size_z, &m_arrays.b_pitch);
     host_B = alloc_3d_array(m_arrays.B_size_x, m_arrays.B_size_y, m_arrays.B_size_z);
 }
 
@@ -67,11 +67,11 @@ void allocate_arrays() {
  * 
  */
 void free_arrays() {
-	free_2d_array(Ex);
-	free_2d_array(Ey);
-	free_2d_array(Bz);
-    free_3d_cuda_array(E);
-    free_3d_cuda_array(B);
+	free_2d_array(m_arrays.Ex);
+	free_2d_array(m_arrays.Ey);
+	free_2d_array(m_arrays.Bz);
+    free_3d_cuda_array(m_arrays.E);
+    free_3d_cuda_array(m_arrays.B);
 	free_3d_array(host_E);
 	free_3d_array(host_B);
 }
