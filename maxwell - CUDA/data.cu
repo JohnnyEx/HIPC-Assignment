@@ -9,7 +9,7 @@
 struct constants m_constants = {
         .c = 299792458, // Speed of light
         .mu = 4.0 * M_PI * 1.0e-7, // permiability of free space
-        .eps = 1.0 / (c * c * mu), // permitivitty of free space
+        .eps = 1.0 / (m_constants.c * m_constants.c * m_constants.mu), // permitivitty of free space
         .cfl = 0.6363961031,
 
 };
