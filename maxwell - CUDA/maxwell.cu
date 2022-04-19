@@ -12,7 +12,7 @@
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
-__global__ void update_fields() {
+__global__ void update_fields(constants m_constants, arrays m_arrays, variables m_variables) {
     int tidx = blockIdx.x*blockDim.x + threadIdx.x;
     int tidy = blockIdx.y*blockDim.y + threadIdx.y;
     int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
@@ -45,7 +45,7 @@ __global__ void update_fields() {
  * @brief Apply boundary conditions
  * 
  */
-__global__ void apply_boundary() {
+__global__ void apply_boundary(arrays m_arrays) {
     int tidx = blockIdx.x * blockDim.x + threadIdx.x;
     int tidy = blockIdx.y * blockDim.y + threadIdx.y;
     int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
@@ -72,7 +72,7 @@ __global__ void apply_boundary() {
  * @param E_mag The returned total magnitude of the Electric field (E)
  * @param B_mag The returned total magnitude of the Magnetic field (B) 
  */
-__global__ void resolve_to_grid(double *E_mag, double *B_mag) {
+__global__ void resolve_to_grid(double *E_mag, double *B_mag, arrays m_arrays) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
     int tidx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     dim3 block = dim3(block_x, block_y);
     dim3 grid = dim3(grid_x, grid_y);
     int noThreads = grid.x * block.x * grid.y  * block.y;
-	problem_set_up<<<1,1>>>();
+	problem_set_up<<<1,1>>>(m_arrays, m_variables);
     double *E_mag_cudaV = (double *) calloc(noThreads, sizeof(double));
     double *B_mag_cudaV = (double *) calloc(noThreads, sizeof(double));
 	double *d_E_mag_cudaV, *d_B_mag_cudaV;
@@ -142,14 +142,14 @@ int main(int argc, char *argv[]) {
 	double t = 0.0;
 	int i = 0;
 	while (i < steps) {
-		apply_boundary<<<grid, block>>>();
-		update_fields<<<grid, block>>>();
+		apply_boundary<<<grid, block>>>(m_arrays);
+		update_fields<<<grid, block>>>(m_constants, m_arrays, m_variables);
 
 		t += dt;
 
 		if (i % output_freq == 0) {
 			double E_mag = 0, B_mag = 0;
-			resolve_to_grid<<<grid, block>>>(d_E_mag_cudaV, d_B_mag_cudaV);
+			resolve_to_grid<<<grid, block>>>(d_E_mag_cudaV, d_B_mag_cudaV, m_arrays);
             cudaMemcy(E_mag_cudaV, d_E_mag_cudaV, total_threads * sizeof(double), cudaMemcyDeviceToHost);
             cudaMemcy(B_mag_cudaV, d_B_mag_cudaV, total_threads * sizeof(double), cudaMemcyDeviceToHost);
             for (int j = 0; j < noThreads; j++){
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	double E_mag, B_mag;
-	resolve_to_grid<<<grid, block>>>(&E_mag, &B_mag);
+	resolve_to_grid<<<grid, block>>>(&E_mag, &B_mag, m_arrays);
     cudaMemcy(E_mag_cudaV, d_E_mag_cudaV, noThreads * sizeof(double), cudaMemcyDeviceToHost);
     cudaMemcy(B_mag_cudaV, d_B_mag_cudaV, noThreads * sizeof(double), cudaMemcyDeviceToHost);
     for (int i = 0; i < noThreads; i++){
