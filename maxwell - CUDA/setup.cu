@@ -55,7 +55,7 @@ void allocate_arrays() {
     alloc_2d_array(m_variables.X, m_variables.Y, &m_arrays.Bz, &m_arrays.bz_pitch);
 
     m_arrays.E_size_x = m_variables.X+1; m_arrays.E_size_y = m_variables.Y+1; m_arrays.E_size_z = 3;
-    alloc_3d_cuda_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z, m_arrays.E, &m_arrays.e_pitch);
+    alloc_3d_cuda_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z, &m_arrays.E, &m_arrays.e_pitch);
     host_E = alloc_3d_array(m_arrays.E_size_x, m_arrays.E_size_y, m_arrays.E_size_z);
     m_arrays.B_size_x = m_variables.X+1; m_arrays.B_size_y = m_variables.Y+1; m_arrays.B_size_z = 3;
     alloc_3d_cuda_array(m_arrays.B_size_x, m_arrays.B_size_y, m_arrays.B_size_z, &m_arrays.B, &m_arrays.b_pitch);
