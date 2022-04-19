@@ -76,10 +76,10 @@ void parse_args(int argc, char *argv[]) {
 	while ((c = getopt_long(argc, argv, "x:y:n:t:f:do:cvh:i:j:k:l:", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 'x':
-				X = atoi(optarg);
+				m_variables.X = atoi(optarg);
 				break;
 			case 'y':
-				Y = atoi(optarg);
+				m_variables.Y = atoi(optarg);
 				break;
 			case 'n':
 				n_specified = 1;
@@ -105,16 +105,16 @@ void parse_args(int argc, char *argv[]) {
 				verbose = 1;
 				break;
             case 'i':
-                grid_x = atoi(optarg);
+                graph.grid_x = atoi(optarg);
                 break;
             case 'j':
-                grid_y = atoi(optarg);
+                graph.grid_y = atoi(optarg);
                 break;
             case 'k':
-                block_x = atoi(optarg);
+                graph.block_x = atoi(optarg);
                 break;
             case 'l':
-                block_y = atoi(optarg);
+                graph.block_y = atoi(optarg);
                 break;
 			case '?':
             case 'h':
@@ -137,8 +137,8 @@ void print_opts() {
     printf("=======================================\n");
     printf("Started with the following options\n");
     printf("=======================================\n");
-    printf("  lengthX            = %14lf\n", lengthX);
-    printf("  lengthY            = %14lf\n", lengthY);
+    printf("  lengthX            = %14lf\n", m_variables.lengthX);
+    printf("  lengthY            = %14lf\n", m_variables.lengthY);
 	printf("  steps              = %14d\n", steps);
 	printf("  output_freq        = %14d\n", output_freq);
     printf("  T                  = %14.12lf\n", T);
