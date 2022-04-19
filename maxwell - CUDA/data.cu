@@ -55,7 +55,7 @@ double *** host_B;
  * @param array The array that will be populated and will be allocated the space necessary to do so
  * @param pitch The pitch value that will be calculated of the array given in case
  */
-void alloc_2d_array(int m, int n, size_t *pitch) {
+void alloc_2d_array(int m, int n, double **array, size_t *pitch) {
   	cudaMallocPitch((void **)array, pitch, n*sizeof(double), m);
     *pitch = (*pitch) / sizeof (double);
 }
