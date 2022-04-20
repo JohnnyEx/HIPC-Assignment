@@ -27,7 +27,7 @@ void update_fields() {
 
 	int i = 0;
 	int j = 0;
-	#pragma omp parallel for schedule(static)
+	#pragma omp parallel for private(i,j)
 	for (i = 0; i < Bz_size_x; i++) {
 		for (j = 0; j < Bz_size_y; j++) {
 			Bz[i][j] = Bz[i][j] - dtx * (Ey[i+1][j] - Ey[i][j])
@@ -35,14 +35,14 @@ void update_fields() {
 		}
 	}
 
-	#pragma omp parallel for schedule(static)
+	#pragma omp parallel for private(i,j)
 	for (i = 0; i < Ex_size_x; i++) {
 		for (j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + dtdyepsmu * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
-	#pragma omp parallel for schedule(static)
+	#pragma omp parallel for private(i,j)
 	for (i = 1; i < Ey_size_x-1; i++) {
 		for (j = 0; j < Ey_size_y; j++) {
 			Ey[i][j] = Ey[i][j] - dtdxepsmu * (Bz[i][j] - Bz[i-1][j]);
@@ -76,8 +76,8 @@ void apply_boundary() {
  * @param B_mag The returned total magnitude of the Magnetic field (B) 
  */
 void resolve_to_grid(double *E_mag, double *B_mag) {
-	double e_mag = 0.0;
-	double b_mag = 0.0;
+	*E_mag = 0.0;
+	*B_mag = 0.0;
 
 	int i, j;
 	for (i = 1; i < E_size_x-1; i++) {
@@ -85,7 +85,7 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 			E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
 			E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
 			//E[i][j][2] = 0.0; // in 2D we don't care about this dimension
-			e_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
+			*E_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
 		}
 	}
 	
@@ -95,12 +95,10 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 			//B[i][j][1] = 0.0;
 			B[i][j][2] = (Bz[i-1][j] + Bz[i][j] + Bz[i][j-1] + Bz[i-1][j-1]) / 4.0;
 
-			b_mag += sqrt(B[i][j][2] * B[i][j][2]);
+			*B_mag += sqrt(B[i][j][2] * B[i][j][2]);
 		}
 	}
 
-	*E_mag = e_mag;
-	*B_mag = b_mag;
 }
 
 /**
