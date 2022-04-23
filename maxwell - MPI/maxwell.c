@@ -141,8 +141,8 @@ int main(int argc, char *argv[]) {
 			resolve_to_grid(&E_mag, &B_mag);
 			// waiting for everyone here and reduce them
 			MPI_Barrier(MPI_COMM_WORLD);
-			MPI_Allreduce(MPI_IN_PLACE, &B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-			MPI_Allreduce(MPI_IN_PLACE, &E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+			MPI_Reduce(&B_mag, &global_B, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+			MPI_Reduce(&E_mag, &global_E, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 			if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 
 			if ((!no_output) && (enable_checkpoints) && rank == 0)
@@ -156,9 +156,9 @@ int main(int argc, char *argv[]) {
 	resolve_to_grid(&E_mag, &B_mag);
 	// waiting for everyone here
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Allreduce(MPI_IN_PLACE, &B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	MPI_Allreduce(MPI_IN_PLACE, &E_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
+	MPI_Reduce(&E_mag, &global_E, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&B_mag, &global_B, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	
 	if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 	if (rank == 0) printf("Simulation complete.\n");
 
