@@ -18,7 +18,7 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
 	
 	printf("\nUpdate fields:: ");
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Sendrecv(&Ey[0], 1, Ey_colm, left, 13, Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Sendrecv(&Ey[0], 1, Ey_colm, left, 13, &Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	printf("\nFirst sendrecv");
 
 	for (int i = 1; i < Bz_size_x + 1; i++) {
@@ -38,7 +38,7 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
 
 	printf("\nGot to the second recv");
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Sendrecv(&Bz[Bz_size_x], 1, Ez_col, right, 13, Bz[0], 1, Ez_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Sendrecv(&Bz[Bz_size_x], 1, Ez_col, right, 13, &Bz[0], 1, Ez_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	printf("\nSecond sendrecv");
 
     for (int i = 0; i < Ey_size_x-1; i++) {
@@ -48,7 +48,7 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Sendrecv(&Ex[Ex_size_x], 1, Ex_col, right, 13, Ex[0], 1, Ex_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Sendrecv(&Ex[Ex_size_x], 1, Ex_col, right, 13, &Ex[0], 1, Ex_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	printf("\nLast sendrecv");
 }
 
