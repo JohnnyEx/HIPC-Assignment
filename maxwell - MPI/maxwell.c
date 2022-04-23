@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
 	set_defaults();
 	parse_args(argc, argv);
-	setup(size);
+	setup();
 
 	if(rank == 0) printf("Running problem size %f x %f on a %d x %d grid.\n", lengthX, lengthY, X, Y);
 	

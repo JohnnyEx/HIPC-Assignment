@@ -61,8 +61,8 @@ void allocate_arrays() {
 	B_size_x = X+1; B_size_y = Y+1; B_size_z = 3;
 	B = alloc_3d_array(B_size_x,B_size_y,B_size_z);
 	printf("Allocated E, B, Ey, Ex, Bz, but not global");
-    global_E = alloc_3d_array((E_size_x-1)*size+1, E_size_y, E_size_z);
-    global_B = alloc_3d_array((B_size_x-1)*size+1, B_size_y, B_size_z);
+    global_E = alloc_3d_array((E_size_x-1)+1, E_size_y, E_size_z);
+    global_B = alloc_3d_array((B_size_x-1)+1, B_size_y, B_size_z);
 	printf("Got rid of global yey");
 }
 
@@ -76,6 +76,8 @@ void free_arrays() {
 	free_2d_array(Bz);
 	free_3d_array(E);
 	free_3d_array(B);
+	free_3d_array(global_E);
+	free_3d_array(global_B);
 }
 
 /**

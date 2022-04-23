@@ -19,10 +19,19 @@ echo $SLURM_CPUS_ON_NODE CPU cores available
 echo $SLURM_JOB_NODELIST - job number
 echo
 
-module load compiler/GCC/11.2.0
+module load compiler/GCC/10.2.0
 module load mpi/OpenMPI/4.0.5-GCC-10.2.0
 
 mpiexec -n ${SLURM_NTASKS} "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell"
+
+printf "\n\nOn a 100 x 100 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 100 -y 100 -f 1 -o mpi/my_sim -n 1000"
+printf "\n\nOn a 400 x 400 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 400 -y 400 -f 1 -o mpi/my_sim -n 1000"
+printf "\n\nOn a 1000 x 1000 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 1000 -y 1000 -f 1 -o mpi/my_sim -n 1000"
+printf "\n\nOn a 2000 x 2000 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 2000 -y 2000 -f 1 -o mpi/my_sim -n 1000"
 
 echo 
 echo Job finished at `date`
