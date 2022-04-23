@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name=MaxwellMPI               # Job name
+#SBATCH --ntasks=16                          # Number of tasks
+#SBATCH --cpus-per-task=1                    # with one core each
+#SBATCH --nodes=2                            # Number of nodes
+#SBATCH --ntasks-per-node=8                  # How many tasks on each node
+#SBATCH --mem-per-cpu=600mb                  # Memory per processor
+#SBATCH --time=00:05:00                      # Time limit hrs:min:sec
+#SBATCH --output=MaxwellMPI_16_%j.log       # Standard output and error log
+
+printf "Running maxwell_mpi regular job on ${SLURM_NTASKS} CPU cores"
+
+printf "\n\nOn a 100 x 100 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} ./maxwell -x 100 -y 100 -f 1 -o mpi/my_sim -n 1000
+printf "\n\nOn a 400 x 400 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} ./maxwell -x 400 -y 400 -f 1 -o mpi/my_sim -n 1000
+printf "\n\nOn a 1000 x 1000 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} ./maxwell -x 1000 -y 1000 -f 1 -o mpi/my_sim -n 1000
+printf "\n\nOn a 2000 x 2000 grid\n\n"
+mpiexec -n ${SLURM_NTASKS} ./maxwell -x 2000 -y 2000 -f 1 -o mpi/my_sim -n 1000
