@@ -43,6 +43,7 @@ void setup() {
  */
 void allocate_arrays() {
 	// Add ghost columns
+	printf("Got to try the allocation of each array");
 	Ex_size_x = X; Ex_size_y = Y+1;
 	Ex = alloc_2d_array(X+1,Y+1);
 	printf("Alloc first thingy");
