@@ -35,8 +35,6 @@ void setup() {
 	
 	if (steps == 0) // only set this if steps hasn't been specified
 		steps = (int) (T / dt);
-
-    X = X / size;
 }
 
 /**
