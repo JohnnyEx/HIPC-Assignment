@@ -1,0 +1,25 @@
+Working directory is /users/iab533/scratch/HIPC-Assignment/HIPC-Assign-12Apr/maxwell - MPI
+Running job on host
+	 node002.pri.viking.alces.network at Sat 23 Apr 18:48:21 BST 2022
+40 CPU cores available
+node[002-003] - job number
+
+Lmod has detected the following error: These module(s) exist but cannot be
+loaded as requested: "lib/libfabric/1.11.0-GCCcore-10.2.0"
+   Try: "module spider lib/libfabric/1.11.0-GCCcore-10.2.0" to see how to load
+the module(s).
+
+
+
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /users/iab533/scratch/HIPC-Assignment/HIPC-Assign-12Apr/maxwell - MPI/maxwell
+Node: node002
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+16 total processes failed to start
+
+Job finished at Sat 23 Apr 18:48:25 BST 2022

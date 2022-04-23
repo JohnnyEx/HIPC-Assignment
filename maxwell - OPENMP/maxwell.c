@@ -27,19 +27,22 @@ void update_fields() {
 
 	int i = 0;
 	int j = 0;
+	#pragma omp parallel for
 	for (i = 0; i < Bz_size_x; i++) {
 		for (j = 0; j < Bz_size_y; j++) {
 			Bz[i][j] = Bz[i][j] - dtx * (Ey[i+1][j] - Ey[i][j])
 				                + dty * (Ex[i][j+1] - Ex[i][j]);
 		}
 	}
-
+	
+	#pragma omp parallel for
 	for (i = 0; i < Ex_size_x; i++) {
 		for (j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + dtdyepsmu * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
+	#pragma omp parallel for
 	for (i = 1; i < Ey_size_x-1; i++) {
 		for (j = 0; j < Ey_size_y; j++) {
 			Ey[i][j] = Ey[i][j] - dtdxepsmu * (Bz[i][j] - Bz[i-1][j]);
@@ -55,13 +58,13 @@ void apply_boundary() {
 	int i = 0;
 	int j = 0;
 
-	#pragma omp parallel for private(i)
+	#pragma omp parallel for private(i), shared(Ex)
 	for (i = 0; i < Ex_size_x; i++) {
 		Ex[i][0] = -Ex[i][1];
 		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
 	}
 
-	#pragma omp parallel for private(j)
+	#pragma omp parallel for private(j), shared(Ey)
 	for (j = 0; j < Ey_size_y; j++) {
 		Ey[0][j] = -Ey[1][j];
 		Ey[Ey_size_x-1][j] = -Ey[Ey_size_x-2][j];

@@ -1,0 +1,49 @@
+Working directory is /users/iab533/scratch/HIPC-Assignment/HIPC-Assign-12Apr/maxwell - MPI
+Running job on host
+	 node002.pri.viking.alces.network at Sat 23 Apr 18:50:04 BST 2022
+40 CPU cores available
+node[002-003] - job number
+
+Lmod has detected the following error: These module(s) exist but cannot be
+loaded as requested: "lib/libfabric/1.11.0-GCCcore-10.2.0"
+   Try: "module spider lib/libfabric/1.11.0-GCCcore-10.2.0" to see how to load
+the module(s).
+
+
+
+Running problem size 1.000000 x 1.000000 on a 4000 x 4000 grid.
+Step        0, Time: 5.30697226e-13 (dt: 5.30697226e-13), E magnitude: 3.56373924e+07, B magnitude: 4.31013131e-04
+Step      100, Time: 5.36004198e-11 (dt: 5.30697226e-13), E magnitude: 3.55613701e+07, B magnitude: 4.20515834e-02
+Step      200, Time: 1.06670142e-10 (dt: 5.30697226e-13), E magnitude: 3.53367254e+07, B magnitude: 7.59522629e-02
+Step      300, Time: 1.59739865e-10 (dt: 5.30697226e-13), E magnitude: 3.49603212e+07, B magnitude: 9.84725142e-02
+Step      400, Time: 2.12809588e-10 (dt: 5.30697226e-13), E magnitude: 3.44266429e+07, B magnitude: 1.10719856e-01
+Step      500, Time: 2.65879310e-10 (dt: 5.30697226e-13), E magnitude: 3.37273463e+07, B magnitude: 1.16515906e-01
+Step      600, Time: 3.18949033e-10 (dt: 5.30697226e-13), E magnitude: 3.28581529e+07, B magnitude: 1.19810153e-01
+Step      700, Time: 3.72018755e-10 (dt: 5.30697226e-13), E magnitude: 3.25408898e+07, B magnitude: 1.22639206e-01
+Step      800, Time: 4.25088478e-10 (dt: 5.30697226e-13), E magnitude: 3.23885273e+07, B magnitude: 1.25382598e-01
+Step      900, Time: 4.78158200e-10 (dt: 5.30697226e-13), E magnitude: 3.22651705e+07, B magnitude: 1.28066965e-01
+Step     1000, Time: 5.31227923e-10 (dt: 5.30697226e-13), E magnitude: 3.21130879e+07, B magnitude: 1.30696430e-01
+Step     1100, Time: 5.84297646e-10 (dt: 5.30697226e-13), E magnitude: 3.18139396e+07, B magnitude: 1.33274224e-01
+Step     1200, Time: 6.37367368e-10 (dt: 5.30697226e-13), E magnitude: 3.11750319e+07, B magnitude: 1.35803265e-01
+Step     1300, Time: 6.90437091e-10 (dt: 5.30697226e-13), E magnitude: 3.00157595e+07, B magnitude: 1.38285948e-01
+Step     1400, Time: 7.43506813e-10 (dt: 5.30697226e-13), E magnitude: 2.85471190e+07, B magnitude: 1.40714544e-01
+Step     1500, Time: 7.96576536e-10 (dt: 5.30697226e-13), E magnitude: 2.88383629e+07, B magnitude: 1.42934058e-01
+Step     1600, Time: 8.49646258e-10 (dt: 5.30697226e-13), E magnitude: 3.10297414e+07, B magnitude: 1.44188228e-01
+Step     1700, Time: 9.02715981e-10 (dt: 5.30697226e-13), E magnitude: 3.52801302e+07, B magnitude: 1.43553120e-01
+Step     1800, Time: 9.55785704e-10 (dt: 5.30697226e-13), E magnitude: 3.93770532e+07, B magnitude: 1.41313243e-01
+Step     1900, Time: 1.00885543e-09 (dt: 5.30697226e-13), E magnitude: 4.25642100e+07, B magnitude: 1.41436218e-01
+Step     2000, Time: 1.06192515e-09 (dt: 5.30697226e-13), E magnitude: 4.47416284e+07, B magnitude: 1.41225073e-01
+Step     2100, Time: 1.11499487e-09 (dt: 5.30697226e-13), E magnitude: 4.65094044e+07, B magnitude: 1.41521510e-01
+Step     2200, Time: 1.16806459e-09 (dt: 5.30697226e-13), E magnitude: 4.81143692e+07, B magnitude: 1.42129630e-01
+Step     2300, Time: 1.22113432e-09 (dt: 5.30697226e-13), E magnitude: 4.94867977e+07, B magnitude: 1.42501895e-01
+Step     2400, Time: 1.27420404e-09 (dt: 5.30697226e-13), E magnitude: 5.06023648e+07, B magnitude: 1.42418532e-01
+Step     2500, Time: 1.32727376e-09 (dt: 5.30697226e-13), E magnitude: 5.13580046e+07, B magnitude: 1.41899491e-01
+Step     2600, Time: 1.38034348e-09 (dt: 5.30697226e-13), E magnitude: 5.14871907e+07, B magnitude: 1.41324818e-01
+Step     2700, Time: 1.43341321e-09 (dt: 5.30697226e-13), E magnitude: 5.06422346e+07, B magnitude: 1.40539590e-01
+Step     2800, Time: 1.48648293e-09 (dt: 5.30697226e-13), E magnitude: 4.87061665e+07, B magnitude: 1.38956416e-01
+Step     2900, Time: 1.53955265e-09 (dt: 5.30697226e-13), E magnitude: 4.74664449e+07, B magnitude: 1.35945855e-01
+Step     3000, Time: 1.59262237e-09 (dt: 5.30697226e-13), E magnitude: 4.78380818e+07, B magnitude: 1.35079706e-01
+Step     3014, Time: 1.59952144e-09 (dt: 5.30697226e-13), E magnitude: 4.79173059e+07, B magnitude: 1.35394037e-01
+Simulation complete.
+
+Job finished at Sat 23 Apr 18:54:48 BST 2022

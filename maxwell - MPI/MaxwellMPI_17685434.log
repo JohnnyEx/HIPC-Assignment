@@ -1,0 +1,72 @@
+Working directory is /users/iab533/scratch/HIPC-Assignment/maxwell - MPI
+Running job on host
+	 node002.pri.viking.alces.network at Sat 23 Apr 16:56:50 BST 2022
+40 CPU cores available
+node[002-003] - job number
+
+Finished the setupRunning problem size 1.000000 x 1.000000 on a 4000 x 4000 grid.
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpiexec noticed that process rank 0 with PID 0 on node node002 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+
+
+On a 100 x 100 grid
+
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 100 -y 100 -f 1 -o mpi/my_sim -n 1000
+Node: node002
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+16 total processes failed to start
+
+
+On a 400 x 400 grid
+
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 400 -y 400 -f 1 -o mpi/my_sim -n 1000
+Node: node002
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+16 total processes failed to start
+
+
+On a 1000 x 1000 grid
+
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 1000 -y 1000 -f 1 -o mpi/my_sim -n 1000
+Node: node002
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+16 total processes failed to start
+
+
+On a 2000 x 2000 grid
+
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell -x 2000 -y 2000 -f 1 -o mpi/my_sim -n 1000
+Node: node002
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+16 total processes failed to start
+
+Job finished at Sat 23 Apr 16:57:02 BST 2022
