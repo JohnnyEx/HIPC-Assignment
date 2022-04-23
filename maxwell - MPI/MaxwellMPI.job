@@ -2,9 +2,9 @@
 #SBATCH --job-name=threaded_job_MaxwellMPI	#OPENMP Jobname
 #SBATCH --mail-type=END,FAIL			# Mail event(none,begin,end,fail,all)
 #SBATCH --mail-user=iab533@york.ac.uk	# Where to send email
-#SBATCH --ntasks=40				        #Run on a single CPU
+#SBATCH --ntasks=16				        #Run on a single CPU
 #SBATCH --nodes=2
-#SBATCH --ntasks-per-node=20
+#SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=1			    #...with 8 cores
 #SBATCH --time=00:10:00				    # Time limit hrs:min:sec
 #SBATCH --output=MaxwellMPI_%j.log	# Standard Output and error log
@@ -22,7 +22,7 @@ echo
 module load compiler/GCC/11.2.0
 module load mpi/OpenMPI/4.0.5-GCC-10.2.0
 
-mpirun -n 40 "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell"
+mpiexec -n ${SLURM_NTASKS} "/users/iab533/scratch/HIPC-Assignment/maxwell - MPI/maxwell"
 
 echo 
 echo Job finished at `date`
