@@ -1,5 +1,5 @@
 CC=mpicc
-CFLAGS=-O3 
+CFLAGS=-O3
 LIBFLAGS=-lm
 
 OBJDIR = obj
