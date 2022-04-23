@@ -16,7 +16,7 @@
  */
 void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col) {
 	
-	printf("\nUpdate fields:: ")
+	printf("\nUpdate fields:: ");
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(&Ey[0], 1, Ey_colm, left, 13, Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	printf("\nFirst sendrecv");
