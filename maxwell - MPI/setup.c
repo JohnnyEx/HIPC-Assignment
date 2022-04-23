@@ -82,14 +82,14 @@ void free_arrays() {
 void problem_set_up(int rank, int size) {
 	int Ex_i = rank * Ex_size_x;
     int endEx_i = Ex_i + Ex_size_x;
-    int Ey_i = rank * (Ex_size_y-1);
-    int endEy_i = Ey_i + Ey_size_y - 1;
+    int Ey_i = rank * (Ey_size_y-1);
+    int endEy_i = Ey_i + Ey_size_x - 1;
 
     // const
     double xcen = lengthX / 2.0;
     double ycen = lengthY / 2.0;
 
-    for (int i = Ex_i; i < endEx_i; i++ ) {
+    for (int i = Ex_i + 0; i < endEx_i; i++ ) {
         for (int j = 0; j < Ex_size_y; j++) {
             double xcoord = (i - xcen) * dx;
             double ycoord = j * dy;
@@ -98,10 +98,10 @@ void problem_set_up(int rank, int size) {
             double rlen = sqrt(rx*rx + ry*ry);
 			double tx = (rlen == 0) ? 0 : ry / rlen;
             double mag = exp(-400.0 * (rlen - (lengthX / 4.0)) * (rlen - (lengthX / 4.0)));
-            Ex[i-Ex_i][j] = mag * tx;
+            Ex[i-Ex_i + 1][j] = mag * tx;
 		}
 	}
-    for (int i = Ey_i; i < endEy_i; i++) {
+    for (int i = Ey_i + 0; i < endEy_i; i++) {
         for (int j = 0; j < Ey_size_y; j++) {
             double xcoord = i * dx;
             double ycoord = (j - ycen) * dy;

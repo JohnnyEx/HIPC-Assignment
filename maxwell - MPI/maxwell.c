@@ -111,8 +111,10 @@ int main(int argc, char *argv[]) {
 	if (verbose) print_opts();
 	
 	allocate_arrays(rank, size);
+	printf("Finished allocating arrays");
 
 	problem_set_up(rank, size);
+	printf("Finished setting up the problem");
 
 	// spray and pray
 	MPI_Datatype Ex_col, Ey_col, Bz_col;
@@ -130,8 +132,9 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	while (i < steps) {
 		apply_boundary(rank, size);
+		printf("Got to apply boundary");
 		update_fields(Ex_col, Ey_col, Bz_col, rank, size, left, right);
-
+		printf("Got to update fields");
 		t += dt;
 
 		if (i % output_freq == 0) {
