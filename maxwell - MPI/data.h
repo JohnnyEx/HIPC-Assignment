@@ -57,6 +57,8 @@ extern int E_size_x, E_size_y, E_size_z;
 extern double *** E;
 extern int B_size_x, B_size_y, B_size_z;
 extern double *** B;
+extern double *** global_E;
+extern double *** global_B;
 
 double **alloc_2d_array(int m, int n);
 void free_2d_array(double ** array);
