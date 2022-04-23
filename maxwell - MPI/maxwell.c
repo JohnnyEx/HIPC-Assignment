@@ -28,16 +28,19 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
 		}
 	}
 
+	printf("\nFinished first loop");
+
 	for (int i = 1; i < Ex_size_x + 1; i++) {
 		for (int j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + (dt / (dy * eps * mu)) * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
+	printf("\nGot to the second recv");
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(&Bz[Bz_size_x], 1, Ez_col, right, 13, Bz[0], 1, Ez_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	printf("\nSecond sendrecv");
-	
+
     for (int i = 0; i < Ey_size_x-1; i++) {
         for (int j = 0; j < Ey_size_y; j++) {
             Ey[i][j] = Ey[i][j] - (dt / (dx * eps * mu)) * (Bz[i+1][j] - Bz[i][j]);
