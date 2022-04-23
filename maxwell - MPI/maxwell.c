@@ -14,7 +14,7 @@
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
-void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col, int size, int rank, int left, int right) {
+void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col) {
 	
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Ey[0], 1, Ey_colm, left, 13, Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -49,7 +49,7 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
  * @brief Apply boundary conditions
  * 
  */
-void apply_boundary(int rank, int size) {
+void apply_boundary() {
 	for (int i = 1; i < Ex_size_x + 1; i++) {
 		Ex[i][0] = -Ex[i][1];
 		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
@@ -67,7 +67,7 @@ void apply_boundary(int rank, int size) {
  * @param E_mag The returned total magnitude of the Electric field (E)
  * @param B_mag The returned total magnitude of the Magnetic field (B) 
  */
-void resolve_to_grid(double *E_mag, double *B_mag, int rank, int size) {
+void resolve_to_grid(double *E_mag, double *B_mag) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 
@@ -97,7 +97,6 @@ void resolve_to_grid(double *E_mag, double *B_mag, int rank, int size) {
  */
 int main(int argc, char *argv[]) {
 	// Initialize MPI
-	int rank, size;
 	MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -110,10 +109,10 @@ int main(int argc, char *argv[]) {
 	
 	if (verbose) print_opts();
 	
-	allocate_arrays(rank, size);
+	allocate_arrays();
 	printf("Finished allocating arrays");
 
-	problem_set_up(rank, size);
+	problem_set_up();
 	printf("Finished setting up the problem");
 
 	// spray and pray
@@ -131,15 +130,15 @@ int main(int argc, char *argv[]) {
 	double t = 0.0;
 	int i = 0;
 	while (i < steps) {
-		apply_boundary(rank, size);
+		apply_boundary();
 		printf("Got to apply boundary");
-		update_fields(Ex_col, Ey_col, Bz_col, rank, size, left, right);
+		update_fields(Ex_col, Ey_col, Bz_col);
 		printf("Got to update fields");
 		t += dt;
 
 		if (i % output_freq == 0) {
 			double E_mag, B_mag;
-			resolve_to_grid(&E_mag, &B_mag, rank, size);
+			resolve_to_grid(&E_mag, &B_mag);
 			// waiting for everyone here and reduce them
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Allreduce(MPI_IN_PLACE, &B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
@@ -154,7 +153,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	double E_mag, B_mag;
-	resolve_to_grid(&E_mag, &B_mag, rank, size);
+	resolve_to_grid(&E_mag, &B_mag);
 	// waiting for everyone here
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Allreduce(MPI_IN_PLACE, &B_mag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);

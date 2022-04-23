@@ -2,9 +2,9 @@
 #define SETUP_H
 
 void set_defaults();
-void setup(int size);
-void allocate_arrays(int rank, int size);
+void setup();
+void allocate_arrays();
 void free_arrays();
-void problem_set_up(int rank, int size);
+void problem_set_up();
 
 #endif

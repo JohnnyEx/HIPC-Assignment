@@ -18,6 +18,12 @@ const double cfl = 0.6363961031;
 double lengthX;
 double lengthY;
 
+// MPI init;
+int rank;
+int size;
+int left;
+int right;
+
 // Discretisation in cells
 int X;
 int Y;

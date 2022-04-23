@@ -27,7 +27,7 @@ void set_defaults() {
  * @brief Set up some of the values required for computation after arguments have been loaded
  * 
  */
-void setup(int size) {
+void setup() {
 	dx = lengthX / X;
 	dy = lengthY / Y;
 
@@ -43,7 +43,7 @@ void setup(int size) {
  * @brief Allocate all of the arrays used for computation
  * 
  */
-void allocate_arrays(int rank, int size) {
+void allocate_arrays() {
 	// Add ghost columns
 	Ex_size_x = X; Ex_size_y = Y+1;
 	Ex = alloc_2d_array(X + 1, Y + 1);
@@ -79,7 +79,7 @@ void free_arrays() {
  * @brief Set up a guassian to curve around the centre
  * 
  */
-void problem_set_up(int rank, int size) {
+void problem_set_up() {
 	int Ex_i = rank * Ex_size_x;
     int endEx_i = Ex_i + Ex_size_x;
     int Ey_i = rank * (Ey_size_y-1);
