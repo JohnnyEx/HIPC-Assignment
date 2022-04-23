@@ -27,7 +27,7 @@ void set_defaults() {
  * @brief Set up some of the values required for computation after arguments have been loaded
  * 
  */
-void setup() {
+void setup(int size) {
 	dx = lengthX / X;
 	dy = lengthY / Y;
 
