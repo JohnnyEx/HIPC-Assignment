@@ -52,7 +52,7 @@ void allocate_arrays() {
 	
 	Bz_size_x = X; Bz_size_y = Y;
 	Bz = alloc_2d_array(X+1, Y);
-	printft("Alloc third thingy");
+	printf("Alloc third thingy");
 	
 	E_size_x = X+1; E_size_y = Y+1; E_size_z = 3;
 	E = alloc_3d_array(E_size_x,E_size_y,E_size_z);
