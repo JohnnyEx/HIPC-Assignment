@@ -25,7 +25,7 @@ void update_fields() {
 	double dtdyepsmu = dt / (dy * eps * mu);
 	double dtdxepsmu = dt / (dx * eps * mu);
 
-	#pragma omp parallel for default(shared) private(dtx, dty) schedule(static) collapse(2)
+	#pragma omp parallel for private(dtx, dty)
 	for (int i = 0; i < Bz_size_x; i++) {
 		for (int j = 0; j < Bz_size_y; j++) {
 			Bz[i][j] = Bz[i][j] - dtx * (Ey[i+1][j] - Ey[i][j])
@@ -33,14 +33,14 @@ void update_fields() {
 		}
 	}
 
-	#pragma omp parallel for default(shared) private(dtdyepsmu) schedule(static) collapse(2)
+	#pragma omp parallel for private(dtdyepsmu)
 	for (int i = 0; i < Ex_size_x; i++) {
 		for (int j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + dtdyepsmu * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
-	#pragma omp parallel for default(shared) private(dtdxepsmu) schedule(static) collapse(2)
+	#pragma omp parallel for private(dtdxepsmu)
 	for (int i = 1; i < Ey_size_x-1; i++) {
 		for (int j = 0; j < Ey_size_y; j++) {
 			Ey[i][j] = Ey[i][j] - dtdxepsmu * (Bz[i][j] - Bz[i-1][j]);
