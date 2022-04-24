@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=32			# ... with four cores
 #SBATCH --mem=4gb				# Job memory request
 #SBATCH --time=00:10:00				# Time limit hrs:min:sec
-#SBATCH --output=MaxwellOPENMP_%j.log		# Standard Output and error log
+#SBATCH --output=OpenMP_fieldsboundary_%j.log		# Standard Output and error log
 #SBATCH --partition=teach			# run in the teaching queue
 
 echo Working directory is `pwd`
