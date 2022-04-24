@@ -12,7 +12,7 @@ extern const double cfl;
 extern double lengthX;
 extern double lengthY;
 
-// MPI processes
+// MPI processes & exchange needed variables
 extern int rank;
 extern int size;
 extern int left;
@@ -63,6 +63,7 @@ extern int E_size_x, E_size_y, E_size_z;
 extern double *** E;
 extern int B_size_x, B_size_y, B_size_z;
 extern double *** B;
+// End visualisation MPI for exchange
 extern double *** global_E;
 extern double *** global_B;
 

@@ -14,12 +14,10 @@
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
-void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_col) {
+void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pEz_col) {
 	
-	printf("\nUpdate fields:: ");
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Sendrecv(&Ey[0], 1, Ey_colm, left, 13, &Ey[Ey_size_x-1], 1, Ey_colm, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	printf("\nFirst sendrecv");
+	MPI_Sendrecv(Ey[0], 1, pEy_col, left, 13, Ey[Ey_size_x-1], 1, pEy_col, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 	for (int i = 1; i < Bz_size_x + 1; i++) {
 		for (int j = 0; j < Bz_size_y; j++) {
@@ -28,18 +26,14 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
 		}
 	}
 
-	printf("\nFinished first loop");
-
 	for (int i = 1; i < Ex_size_x + 1; i++) {
 		for (int j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + (dt / (dy * eps * mu)) * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
-	printf("\nGot to the second recv");
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Sendrecv(&Bz[Bz_size_x], 1, Ez_col, right, 13, &Bz[0], 1, Ez_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	printf("\nSecond sendrecv");
+	MPI_Sendrecv(Bz[Bz_size_x], 1, pEz_col, right, 13, Bz[0], 1, pEz_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     for (int i = 0; i < Ey_size_x-1; i++) {
         for (int j = 0; j < Ey_size_y; j++) {
@@ -48,8 +42,7 @@ void update_fields(MPI_Datatype Ex_col, MPI_Datatype Ey_colm, MPI_Datatype Ez_co
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Sendrecv(&Ex[Ex_size_x], 1, Ex_col, right, 13, &Ex[0], 1, Ex_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	printf("\nLast sendrecv");
+	MPI_Sendrecv(Ex[Ex_size_x], 1, pEx_col, right, 13, Ex[0], 1, pEx_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
 /**
@@ -111,19 +104,15 @@ int main(int argc, char *argv[]) {
 	set_defaults();
 	parse_args(argc, argv);
 	setup();
-	printf("Finished the setup");
 
 	if(rank == 0) printf("Running problem size %f x %f on a %d x %d grid.\n", lengthX, lengthY, X, Y);
 	
 	if (verbose) print_opts();
 	
 	allocate_arrays();
-	printf("Finished allocating arrays");
 
 	problem_set_up();
-	printf("Finished setting up the problem");
 
-	// spray and pray
 	MPI_Datatype Ex_col, Ey_col, Bz_col;
 	MPI_Type_vector(1, Ex_size_y, Ex_size_y, MPI_DOUBLE, &Ex_col);
 	MPI_Type_commit(&Ex_col);
@@ -134,14 +123,16 @@ int main(int argc, char *argv[]) {
 	int left = rank-1 < 0 ? MPI_PROC_NULL : rank-1;
 	int right = rank+1 >= size ? MPI_PROC_NULL: rank+1;
 
+	MPI_Datatype global_grid;
+	MPI_Type_vector(E_size_x-1, E_size_z*E_size_y, E_size_z*E_size_y, MPI_DOUBLE, &global_grid);
+	MPI_Type_commit(&global_grid);
+
 	// start at time 0
 	double t = 0.0;
 	int i = 0;
 	while (i < steps) {
 		apply_boundary();
-		printf("Got to apply boundary");
 		update_fields(Ex_col, Ey_col, Bz_col);
-		printf("Got to update fields");
 		t += dt;
 
 		if (i % output_freq == 0) {
@@ -153,8 +144,13 @@ int main(int argc, char *argv[]) {
 			MPI_Reduce(&E_mag, &global_E, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 			if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 
-			if ((!no_output) && (enable_checkpoints) && rank == 0)
-				write_checkpoint(i);
+			if ((!no_output) && (enable_checkpoints))
+			{
+				MPI_Gather(E[0][0], 1, global_grid, global_E[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
+				MPI_Gather(B[0][0], 1, global_grid, global_B[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
+				if(rank == 0) write_checkpoint(i);
+			}
+			
 		}
 
 		i++;
@@ -166,6 +162,9 @@ int main(int argc, char *argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Reduce(&E_mag, &global_E, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(&B_mag, &global_B, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+	MPI_Gather(E[0][0], 1, global_grid, global_E[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
+	MPI_Gather(B[0][0], 1, global_grid, global_B[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
 	
 	if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
 	if (rank == 0) printf("Simulation complete.\n");
