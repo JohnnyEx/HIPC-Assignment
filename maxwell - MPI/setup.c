@@ -60,8 +60,8 @@ void allocate_arrays() {
 	B_size_x = X+1; B_size_y = Y+1; B_size_z = 3;
 	B = alloc_3d_array(B_size_x,B_size_y,B_size_z);
     
-	global_E = alloc_3d_array((E_size_x-1)+1, E_size_y, E_size_z);
-	global_B = alloc_3d_array((B_size_x-1)+1, B_size_y, B_size_z);
+	global_E = alloc_3d_array((E_size_x-1)*size+1, E_size_y, E_size_z);
+	global_B = alloc_3d_array((B_size_x-1)*size+1, B_size_y, B_size_z);
 
 }
 
@@ -85,15 +85,15 @@ void free_arrays() {
  */
 void problem_set_up() {
 	int Ex_i = rank * Ex_size_x;
-    int endEx_i = Ex_i + Ex_size_x;
     int Ey_i = rank * (Ey_size_y-1);
-    int endEy_i = Ey_i + Ey_size_x - 1;
-
+	int endEx = Ex_i + Ex_size_x;
+	int endEy = Ey_i + Ey_size_x-1;
+	
     // const
     double xcen = lengthX / 2.0;
     double ycen = lengthY / 2.0;
 
-    for (int i = Ex_i + 0; i < endEx_i; i++ ) {
+    for (int i = Ex_i + 0; i < endEx; i++ ) {
         for (int j = 0; j < Ex_size_y; j++) {
             double xcoord = (i - xcen) * dx;
             double ycoord = j * dy;
@@ -102,10 +102,10 @@ void problem_set_up() {
             double rlen = sqrt(rx*rx + ry*ry);
 			double tx = (rlen == 0) ? 0 : ry / rlen;
             double mag = exp(-400.0 * (rlen - (lengthX / 4.0)) * (rlen - (lengthX / 4.0)));
-            Ex[i-Ex_i + 1][j] = mag * tx;
+            Ex[i-Ex_i+1][j] = mag * tx;
 		}
 	}
-    for (int i = Ey_i + 0; i < endEy_i; i++) {
+    for (int i = Ey_i + 0; i < endEy; i++) {
         for (int j = 0; j < Ey_size_y; j++) {
             double xcoord = i * dx;
             double ycoord = (j - ycen) * dy;
