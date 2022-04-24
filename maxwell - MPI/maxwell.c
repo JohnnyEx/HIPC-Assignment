@@ -21,6 +21,7 @@ void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_
 
 	for (int i = 1; i < Bz_size_x + 1; i++) {
 		for (int j = 0; j < Bz_size_y; j++) {
+			// changed position for exchange
 			Bz[i][j] = Bz[i][j] - (dt / dx) * (Ey[i][j] - Ey[i-1][j])
 				                + (dt / dy) * (Ex[i][j+1] - Ex[i][j]);
 		}
