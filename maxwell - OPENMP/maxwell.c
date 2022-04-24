@@ -25,6 +25,7 @@ void update_fields() {
 	double dtdyepsmu = dt / (dy * eps * mu);
 	double dtdxepsmu = dt / (dx * eps * mu);
 
+	#pragma omp parallel for private(dtx, dty) schedule(static) collapse(2)
 	for (int i = 0; i < Bz_size_x; i++) {
 		for (int j = 0; j < Bz_size_y; j++) {
 			Bz[i][j] = Bz[i][j] - dtx * (Ey[i+1][j] - Ey[i][j])
@@ -32,12 +33,14 @@ void update_fields() {
 		}
 	}
 
+	#pragma omp parallel for private(dtdyepsmu) schedule(static) collapse(2)
 	for (int i = 0; i < Ex_size_x; i++) {
 		for (int j = 1; j < Ex_size_y-1; j++) {
 			Ex[i][j] = Ex[i][j] + dtdyepsmu * (Bz[i][j] - Bz[i][j-1]);
 		}
 	}
 
+	#pragma omp parallel for private(dtdxepsmu) schedule(static) collapse(2)
 	for (int i = 1; i < Ey_size_x-1; i++) {
 		for (int j = 0; j < Ey_size_y; j++) {
 			Ey[i][j] = Ey[i][j] - dtdxepsmu * (Bz[i][j] - Bz[i-1][j]);
@@ -50,12 +53,11 @@ void update_fields() {
  * 
  */
 void apply_boundary() {
-	#pragma omp parallel for
 	for (int i = 0; i < Ex_size_x; i++) {
 		Ex[i][0] = -Ex[i][1];
 		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
 	}
-	#pragma omp parallel for
+
 	for (int j = 0; j < Ey_size_y; j++) {
 		Ey[0][j] = -Ey[1][j];
 		Ey[Ey_size_x-1][j] = -Ey[Ey_size_x-2][j];
@@ -72,7 +74,6 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 
-	#pragma omp parallel for reduction(+: E_mag)
 	for (int i = 1; i < E_size_x-1; i++) {
 		for (int j = 1; j < E_size_y-1; j++) {
 			E[i][j][0] = (Ex[i-1][j] + Ex[i][j]) / 2.0;
@@ -82,7 +83,6 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 		}
 	}
 	
-	#pragma omp parallel for reduction(+: B_mag)
 	for (int i = 1; i < B_size_x-1; i++) {
 		for (int j = 1; j < B_size_y-1; j++) {
 			//B[i][j][0] = 0.0; // in 2D we don't care about these dimensions
