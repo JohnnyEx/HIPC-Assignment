@@ -18,6 +18,12 @@ const double cfl = 0.6363961031;
 double lengthX;
 double lengthY;
 
+// MPI init & exchange variables;
+int rank;
+int size;
+int left;
+int right;
+
 // Discretisation in cells
 int X;
 int Y;
@@ -44,6 +50,9 @@ int E_size_x, E_size_y, E_size_z;
 double *** E;
 int B_size_x, B_size_y, B_size_z;
 double *** B;
+// Grid exchange variable
+double *** global_E;
+double *** global_B;
 
 /**
  * @brief Allocate a 2D array that is addressable using square brackets

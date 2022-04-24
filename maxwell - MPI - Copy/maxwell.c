@@ -16,7 +16,6 @@
  */
 void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_col) {
 	
-	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Ey[0], 1, pEy_col, left, 13, Ey[Ey_size_x-1], 1, pEy_col, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 	for (int i = 1; i < Bz_size_x + 1; i++) {
@@ -33,7 +32,6 @@ void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_
 		}
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Bz[Bz_size_x], 1, pBz_col, right, 13, Bz[0], 1, pBz_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     for (int i = 0; i < Ey_size_x-1; i++) {
@@ -42,7 +40,6 @@ void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_
 		}
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Ex[Ex_size_x], 1, pEx_col, right, 13, Ex[0], 1, pEx_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 

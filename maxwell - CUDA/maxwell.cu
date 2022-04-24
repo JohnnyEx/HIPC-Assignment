@@ -13,10 +13,11 @@
  * 
  */
 __global__ void update_fields(constants m_constants, arrays m_arrays, variables m_variables) {
-    int tidx = blockIdx.x*blockDim.x + threadIdx.x;
-    int tidy = blockIdx.y*blockDim.y + threadIdx.y;
-    int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
-    int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
+    int tidx = blockIdx.x*blockDim.x + threadIdx.x; // thread id per x
+    int tidy = blockIdx.y*blockDim.y + threadIdx.y; // thread id per y
+    int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // cuda cells per x
+    int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y);  // cuda cells per y
+    
 
     for (int i = cx_ex * tidx; i < cx_ex * (tidx + 1); i++) {
         for (int j = cy_ey * tidy; j < cy_ey * (tidy + 1); j++) {
@@ -46,10 +47,10 @@ __global__ void update_fields(constants m_constants, arrays m_arrays, variables 
  * 
  */
 __global__ void apply_boundary(arrays m_arrays) {
-    int tidx = blockIdx.x * blockDim.x + threadIdx.x;
-    int tidy = blockIdx.y * blockDim.y + threadIdx.y;
-    int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
-    int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
+    int tidx = blockIdx.x * blockDim.x + threadIdx.x; // thread id per x
+    int tidy = blockIdx.y * blockDim.y + threadIdx.y; // thread id per y
+    int cx_ex = m_arrays.Ex_size_x / (gridDim.x * blockDim.x); // cuda cells per x
+    int cy_ey = m_arrays.Ey_size_y / (gridDim.y * blockDim.y); // cuda cells per y
 
     for (int i = tidx * cx_ex; i < cx_ex * (tidx + 1); i++) {
         if (tidy == 0)
@@ -77,8 +78,8 @@ __global__ void resolve_to_grid(double *E_mag, double *B_mag, arrays m_arrays) {
 	*B_mag = 0.0;
     int tidx = blockIdx.x*blockDim.x + threadIdx.x;
     int tidy = blockIdx.y*blockDim.y + threadIdx.y;
-    int cx_x = (m_arrays.E_size_x - 1) / (gridDim.x * blockDim.x); // Cells per cuda thread in X direction
-    int cy_y = (m_arrays.E_size_y - 1) / (gridDim.y * blockDim.y); // Cells per cuda thread in Y direction
+    int cx_x = (m_arrays.E_size_x - 1) / (gridDim.x * blockDim.x);
+    int cy_y = (m_arrays.E_size_y - 1) / (gridDim.y * blockDim.y); 
     E_mag[tidy * gridDim.x * blockDim.x + tidx] = 0.0;
     B_mag[tidy * gridDim.x * blockDim.x + tidx] = 0.0;
 
@@ -152,7 +153,7 @@ int main(int argc, char *argv[]) {
 			resolve_to_grid<<<grid, block>>>(d_E_mag_cudaV, d_B_mag_cudaV, m_arrays);
             cudaMemcpy(E_mag_cudaV, d_E_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
             cudaMemcpy(B_mag_cudaV, d_B_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
-            for (int j = 0; j < noThreads; j++){
+            for (int i = 0; j < noThreads; j++){
                 E_mag += E_mag_cudaV[j];
                 B_mag += B_mag_cudaV[j];
             }
