@@ -8,7 +8,6 @@
 #include "data.h"
 #include "setup.h"
 
-#include <papi.h>
 #include <time.h>
 
 /**
@@ -92,38 +91,8 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
  */
 int main(int argc, char *argv[]) {
 	
-	// Papi code ffs
-	int retval;
-	retval=PAPI_library_init(PAPI_VER_CURRENT);
-	if (retval!=PAPI_VER_CURRENT) {
-		printf("Error initializing PAPI! %s\n",	PAPI_strerror(retval));
-        return 0;
-	}
-
-	int eventset=PAPI_NULL;
-
-	retval=PAPI_create_eventset(&eventset);
-	if (retval!=PAPI_OK) {
-		printf("Error creating eventset! %s\n", PAPI_strerror(retval));
-	}
-
-	retval=PAPI_add_named_event(eventset,"PAPI_TOT_CYC");
-	if (retval!=PAPI_OK) {
-		printf("Error adding PAPI_TOT_CYC: %s\n",PAPI_strerror(retval));
-	}
-	//end papi initialization
-
 	// time starting
 	clock_t begin = clock();
-
-	// papi start
-	long long count;
-
-	PAPI_reset(eventset);
-	retval=PAPI_start(eventset);
-	if (retval!=PAPI_OK) {
-		printf("Error starting CUDA: %s\n",PAPI_strerror(retval));
-	}
 
 
 	set_defaults();
@@ -171,18 +140,6 @@ int main(int argc, char *argv[]) {
 	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC;
 	printf("Time spent for this execution: %lf\n", time_spent);
 	
-	// end papii
-	retval=PAPI_stop(eventset,&count);
-	if (retval!=PAPI_OK) {
-		printf("Error stopping:  %s\n", PAPI_strerror(retval));
-	}
-	else {
-		printf("Measured %lld cycles\n",count);
-	}
-
-	PAPI_cleanup_eventset(eventset);
-    PAPI_destroy_eventset(&eventset);
-	// end
 
 	if (!no_output) 
 		write_result();
