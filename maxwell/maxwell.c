@@ -8,6 +8,7 @@
 #include "data.h"
 #include "setup.h"
 
+#include <papi.h>
 #include <time.h>
 
 /**
