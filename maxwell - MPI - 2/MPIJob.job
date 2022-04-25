@@ -8,6 +8,13 @@
 #SBATCH --time=00:05:00                      # Time limit hrs:min:sec
 #SBATCH --output=MaxwellMPI_%j.log       # Standard output and error log
 
+echo Working directory is `pwd`
+echo Running job on host
+echo -e '\t' `hostname` at `date`
+echo $SLURM_CPUS_ON_NODE CPU cores available
+echo $SLURM_JOB_NODELIST - job number
+echo
+
 module load mpi/OpenMPI/4.1.1-GCC-11.2.0
 
 mpiexec -n ${SLURM_NTASKS} ./maxwell
