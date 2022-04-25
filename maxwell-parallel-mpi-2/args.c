@@ -100,9 +100,6 @@ void parse_args(int argc, char *argv[]) {
             case 'h':
 				print_help(argv[0]);
 				exit(1);
-			case 'e':
-				comp_mode = atoi(optarg);
-				break;
 		}
 	}
 	if (n_specified == 1 && t_specified == 1) {

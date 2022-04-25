@@ -50,7 +50,7 @@ int write_checkpoint(int iteration) {
     char filename[1024];
     char comp_filename[1024];
     sprintf(filename, checkpoint_basename, iteration);
-    return write_vtk(filename, comp_filename);
+    return write_vtk(filename);
 }
 
 /**
@@ -59,7 +59,7 @@ int write_checkpoint(int iteration) {
  * @return int Return whether the write was successful
  */
 int write_result() {
-    return write_vtk(result_filename, NULL);
+    return write_vtk(result_filename);
 }
 
 /**
@@ -68,7 +68,7 @@ int write_result() {
  * @param filename The filename to write out
  * @return int Return whether the write was successful
  */
-int write_vtk(char* filename, char *comp_filename) {
+int write_vtk(char* filename) {
     FILE * f;
     f = fopen(filename, "w");
     if (f == NULL) {
