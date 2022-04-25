@@ -7,6 +7,7 @@
 #include "vtk.h"
 #include "data.h"
 #include "setup.h"
+#include <time.h>
 
 #include <mpi.h>
 
@@ -102,6 +103,10 @@ int main(int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+	
+	// time starting
+	clock_t begin = clock();
+
 	set_defaults();
 	parse_args(argc, argv);
 	setup();
@@ -169,6 +174,13 @@ int main(int argc, char *argv[]) {
 	if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, global_E_mag, global_B_mag);
 	if (rank == 0) printf("Simulation complete.\n");
 
+	
+	// time stop
+	clock_t end = clock();
+    // calc the time;
+	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC / omp_get_num_threads();
+	printf("Time spent for this execution: %lf", time_spent);
+	
 	X = X * size;
 	if (!no_output && rank == 0) 
 		write_result();

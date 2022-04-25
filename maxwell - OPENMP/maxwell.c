@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 	printf("         number of computer nodes = %6d   ", nNumProcessors);
 	printf("\n\n");	
 	// end omp
-	omp_set_num_threads(32);
+	omp_set_num_threads(16);
 	// Papi code ffs
 	int retval;
 	retval=PAPI_library_init(PAPI_VER_CURRENT);
