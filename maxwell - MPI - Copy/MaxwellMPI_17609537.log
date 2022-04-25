@@ -1,0 +1,20 @@
+Working directory is /users/iab533/scratch/HIPC-Assignment/maxwell - MPI
+Running job on host
+	 node002.pri.viking.alces.network at Tue 12 Apr 15:45:09 BST 2022
+40 CPU cores available
+node[002-003] - job number
+
+
+The following have been reloaded with a version change:
+  1) compiler/GCC/11.2.0 => compiler/GCC/10.2.0
+  2) compiler/GCCcore/11.2.0 => compiler/GCCcore/10.2.0
+  3) lib/zlib/1.2.11-GCCcore-11.2.0 => lib/zlib/1.2.11-GCCcore-10.2.0
+  4) tools/binutils/2.37-GCCcore-11.2.0 => tools/binutils/2.35-GCCcore-10.2.0
+
+Running problem size 1.000000 x 1.000000 on a 4000 x 4000 grid.
+--------------------------------------------------------------------------
+mpirun noticed that process rank 24 with PID 163542 on node node003 exited on signal 9 (Killed).
+--------------------------------------------------------------------------
+
+Job finished at Tue 12 Apr 15:45:18 BST 2022
+slurmstepd: error: Detected 291 oom-kill event(s) in StepId=17609537.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.

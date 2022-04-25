@@ -1,0 +1,34 @@
+Working directory is /users/iab533/scratch/HIPC-Assignment/maxwell - MPI
+Running job on host
+	 node002.pri.viking.alces.network at Sun 24 Apr 21:05:23 BST 2022
+40 CPU cores available
+node[002-003] - job number
+
+
+The following have been reloaded with a version change:
+  1) compiler/GCC/9.3.0 => compiler/GCC/11.2.0
+  2) compiler/GCCcore/9.3.0 => compiler/GCCcore/11.2.0
+  3) lib/zlib/1.2.11-GCCcore-9.3.0 => lib/zlib/1.2.11-GCCcore-11.2.0
+  4) tools/binutils/2.34-GCCcore-9.3.0 => tools/binutils/2.37-GCCcore-11.2.0
+
+Finished the setupRunning problem size 1.000000 x 1.000000 on a 4000 x 4000 grid.
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Finished the setupGot to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Got to try the allocation of each arrayAlloc first thingyAlloc second thingyAlloc third thingyAlloc E thingyAllocated E, B, Ey, Ex, Bz, but not globalGot rid of global yeyFinished allocating arraysFinished setting up the problemGot to apply boundary
+Update fields:: 
+First sendrecv
+Finished first loop
+slurmstepd: error: *** JOB 17704470 ON node002 CANCELLED AT 2022-04-24T21:25:44 DUE TO TIME LIMIT ***

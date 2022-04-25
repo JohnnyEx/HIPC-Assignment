@@ -1,0 +1,30 @@
+Working directory is /users/iab533/scratch/HIPC-Assignment/maxwell - MPI
+Running job on host
+	 node002.pri.viking.alces.network at Sat 23 Apr 11:57:12 BST 2022
+40 CPU cores available
+node[002-003] - job number
+
+
+The following have been reloaded with a version change:
+  1) compiler/GCC/10.2.0 => compiler/GCC/11.2.0
+  2) compiler/GCCcore/10.2.0 => compiler/GCCcore/11.2.0
+  3) lib/zlib/1.2.11-GCCcore-10.2.0 => lib/zlib/1.2.11-GCCcore-11.2.0
+  4) tools/binutils/2.35-GCCcore-10.2.0 => tools/binutils/2.37-GCCcore-11.2.0
+
+
+The following have been reloaded with a version change:
+  1) compiler/GCC/11.2.0 => compiler/GCC/10.2.0
+  2) compiler/GCCcore/11.2.0 => compiler/GCCcore/10.2.0
+  3) lib/zlib/1.2.11-GCCcore-11.2.0 => lib/zlib/1.2.11-GCCcore-10.2.0
+  4) tools/binutils/2.37-GCCcore-11.2.0 => tools/binutils/2.35-GCCcore-10.2.0
+
+Running problem size 1.000000 x 1.000000 on a 100 x 4000 grid.
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node node002 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+
+Job finished at Sat 23 Apr 11:57:21 BST 2022
