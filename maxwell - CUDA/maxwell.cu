@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 			resolve_to_grid<<<grid, block>>>(d_E_mag_cudaV, d_B_mag_cudaV, m_arrays);
             cudaMemcpy(E_mag_cudaV, d_E_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
             cudaMemcpy(B_mag_cudaV, d_B_mag_cudaV, noThreads * sizeof(double), cudaMemcpyDeviceToHost);
-            for (int i = 0; j < noThreads; j++){
+            for (int j = 0; j < noThreads; j++){
                 E_mag += E_mag_cudaV[j];
                 B_mag += B_mag_cudaV[j];
             }
