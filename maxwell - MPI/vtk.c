@@ -93,12 +93,12 @@ int write_vtk(char* filename) {
     fprintf(f, "VECTORS E_field float\n");
     for (int j = 0; j <= Y; j++) {
         for (int i = 0; i <= X; i++)
-            fprintf(f, "  %.12e %.12e 0.000000000000e+00\n", E[i][j][0], E[i][j][1]);
+            fprintf(f, "  %.12e %.12e 0.000000000000e+00\n", global_E[i][j][0], global_E[i][j][1]);
     }
     fprintf(f, "VECTORS B_field float\n");
     for (int j = 0; j <= Y; j++) {
         for (int i = 0; i <= X; i++)
-            fprintf(f, "  0.000000000000e+00 0.000000000000e+00 %.12e\n", B[i][j][2]);
+            fprintf(f, "  0.000000000000e+00 0.000000000000e+00 %.12e\n", global_B[i][j][2]);
     }
 
     fclose(f);

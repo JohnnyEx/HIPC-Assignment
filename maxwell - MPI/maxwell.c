@@ -169,6 +169,7 @@ int main(int argc, char *argv[]) {
 	if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, global_E_mag, global_B_mag);
 	if (rank == 0) printf("Simulation complete.\n");
 
+	X = X * size;
 	if (!no_output && rank == 0) 
 		write_result();
 
