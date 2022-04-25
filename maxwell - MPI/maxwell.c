@@ -72,7 +72,7 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 
-    for (int i = rank != 0 ? 0 : 1; i < E_size_x-1; i++) {
+    for (int i = rank == 0 ? 1 : 0; i < E_size_x-1; i++) {
         for (int j = 1; j < E_size_y-1; j++) {
             E[i][j][0] = (Ex[i][j] + Ex[i+1][j]) / 2.0;
             E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Reduce(&B_mag, &global_B, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 			MPI_Reduce(&E_mag, &global_E, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-			if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, E_mag, B_mag);
+			if (rank == 0) printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, global_E, global_B);
 
 			if ((!no_output) && (enable_checkpoints))
 			{
