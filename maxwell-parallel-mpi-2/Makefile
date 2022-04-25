@@ -26,3 +26,4 @@ directories: $(OBJDIR)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
+
