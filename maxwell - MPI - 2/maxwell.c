@@ -10,18 +10,21 @@
 #include "data.h"
 #include "setup.h"
 
+#include <time.h>
+
 /**
  * @brief Update the magnetic and electric fields. The magnetic fields are updated for a half-time-step. The electric fields are updated for a full time-step.
  * 
  */
 void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_col) {
 
-	// halo exchange for Ey array
+	// first halo exchange
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Ey[0], 1, pEy_col, left, 13, Ey[Ey_size_x-1], 1, pEy_col, right, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 	for (int i = 1; i < Bz_size_x+1; i++) {
 		for (int j = 0; j < Bz_size_y; j++) {
+			// changed the positions for halo exchange - with the ghost cols
 			Bz[i][j] = Bz[i][j] - (dt / dx) * (Ey[i][j] - Ey[i-1][j])
 				                + (dt / dy) * (Ex[i][j+1] - Ex[i][j]);
 		}
@@ -33,7 +36,6 @@ void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_
 		}
 	}
 
-	// halo exchange for Bz array
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Bz[Bz_size_x], 1, pBz_col, right, 13, Bz[0], 1, pBz_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -43,7 +45,6 @@ void update_fields(MPI_Datatype pEx_col, MPI_Datatype pEy_col, MPI_Datatype pBz_
 		}
 	}
 
-	// halo exchange for Ex array
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Sendrecv(Ex[Ex_size_x], 1, pEx_col, right, 13, Ex[0], 1, pEx_col, left, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
@@ -58,7 +59,6 @@ void apply_boundary() {
 		Ex[i][Ex_size_y-1] = -Ex[i][Ex_size_y-2];
 	}
 
-	// condition imposed to check rank 0
 	for (int j = 0; j < Ey_size_y; j++) {
 		if (rank == 0) Ey[0][j] = -Ey[1][j];
 		if (rank == size -1) Ey[Ey_size_x-1][j] = -Ey[Ey_size_x-2][j];
@@ -75,21 +75,17 @@ void resolve_to_grid(double *E_mag, double *B_mag) {
 	*E_mag = 0.0;
 	*B_mag = 0.0;
 	
-	// control parameters adjusted to check rank 0
 	for (int i = rank == 0 ? 1 : 0; i < E_size_x-1; i++) {
 		for (int j = 1; j < E_size_y-1; j++) {
 			E[i][j][0] = (Ex[i][j] + Ex[i+1][j]) / 2.0;
 			E[i][j][1] = (Ey[i][j-1] + Ey[i][j]) / 2.0;
-
 			*E_mag += sqrt((E[i][j][0] * E[i][j][0]) + (E[i][j][1] * E[i][j][1]));
 		}
 	}
 
-	// control parameters adjusted to check rank 0
 	for (int i = rank == 0 ? 1 : 0; i < B_size_x-1; i++) {
 		for (int j = 1; j < B_size_y-1; j++) {
 			B[i][j][2] = (Bz[i][j] + Bz[i+1][j] + Bz[i+1][j-1] + Bz[i][j-1]) / 4.0;
-
 			*B_mag += sqrt(B[i][j][2] * B[i][j][2]);
 		}
 	}
@@ -106,6 +102,9 @@ int main(int argc, char *argv[]) {
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+	// time starting
+	clock_t begin = clock();
 
 	set_defaults();
 	parse_args(argc, argv);
@@ -125,10 +124,6 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	double global_E_mag, global_B_mag;
 
-	/**
-	 * @brief 
-	 * setting up MPI datatypes for 2D arrays to use in halo exchanges
-	 */
 	MPI_Datatype ex_col, ey_col, bz_col;
 	MPI_Type_vector(1, Ex_size_y, Ex_size_y, MPI_DOUBLE, &ex_col);
 	MPI_Type_commit(&ex_col);
@@ -140,17 +135,12 @@ int main(int argc, char *argv[]) {
 	// calculate left and right ranks
 	left = rank-1 < 0 ? MPI_PROC_NULL : rank-1;
 	right = rank+1 >= size ? MPI_PROC_NULL: rank+1;
-	
-	/**
-	 * @brief 
-	 * setting up MPI datatype for 3D array to gather resolved data from all nodes
-	 */
+
 	MPI_Datatype global_grid;
 	MPI_Type_vector(E_size_x-1, E_size_z*E_size_y, E_size_z*E_size_y, MPI_DOUBLE, &global_grid);
 	MPI_Type_commit(&global_grid);
 
 	double start, end;
-	start = MPI_Wtime();
 
 	while (i < steps) {
 		apply_boundary();
@@ -161,20 +151,21 @@ int main(int argc, char *argv[]) {
 		if (i % output_freq == 0) {
 			double E_mag, B_mag;
 			resolve_to_grid(&E_mag, &B_mag);
+
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Reduce(&E_mag, &global_E_mag, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 			MPI_Reduce(&B_mag, &global_B_mag, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
 			if (rank == 0) {
 				printf("Step %8d, Time: %14.8e (dt: %14.8e), E magnitude: %14.8e, B magnitude: %14.8e\n", i, t, dt, global_E_mag, global_B_mag);
 			}
 			
 			if (enable_checkpoints && !no_output) {
+
 				MPI_Gather(E[0][0], 1, global_grid, global_E[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
 				MPI_Gather(B[0][0], 1, global_grid, global_B[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
-			}
-			
-			if ((!no_output) && (enable_checkpoints) && rank == 0) {
-				write_checkpoint(i);
+
+				if (rank == 0) write_checkpoint(i);
 			}
 		}
 		i++;
@@ -182,6 +173,7 @@ int main(int argc, char *argv[]) {
 
 	double E_mag, B_mag;
 	resolve_to_grid(&E_mag, &B_mag);
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Reduce(&E_mag, &global_E_mag, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(&B_mag, &global_B_mag, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -194,16 +186,22 @@ int main(int argc, char *argv[]) {
 	MPI_Gather(E[0][0], 1, global_grid, global_E[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
 	MPI_Gather(B[0][0], 1, global_grid, global_B[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
 	
-	end = MPI_Wtime();
-
-	if (rank == 0)
-		printf("Total elapsed time is %fs\n", end - start);
+	// time stop
+	clock_t end = clock();
+    // calc the time;
+	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC;
+	if (rank == 0)	printf("Time spent for this execution: %lf\n", time_spent);
 		
 	if (!no_output && rank == 0)
 		write_result();
 
 	free_arrays();
-	
+
+	MPI_Type_free(&ex_col);
+	MPI_Type_free(&ey_col);
+	MPI_Type_free(&bz_col);
+	MPI_Type_free(&global_grid);
+
 	MPI_Finalize();
 
 	exit(0);

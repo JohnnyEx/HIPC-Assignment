@@ -46,12 +46,12 @@ void setup() {
  */
 void allocate_arrays() {
 	Ex_size_x = X; Ex_size_y = Y+1;
-	Ex = alloc_2d_array(Ex_size_x+1, Ex_size_y); // Adding ghsot column
+	Ex = alloc_2d_array(Ex_size_x+1, Ex_size_y); // + 1 for ghosting
 	Ey_size_x = X+1; Ey_size_y = Y;
 	Ey = alloc_2d_array(Ey_size_x, Ey_size_y);
 	
 	Bz_size_x = X; Bz_size_y = Y;
-	Bz = alloc_2d_array(Bz_size_x+1, Bz_size_y); // Adding ghost column
+	Bz = alloc_2d_array(Bz_size_x+1, Bz_size_y); // + 1 for ghosting 
 	
 	E_size_x = X+1; E_size_y = Y+1; E_size_z = 3;
 	E = alloc_3d_array(E_size_x, E_size_y, E_size_z);
@@ -73,6 +73,8 @@ void free_arrays() {
 	free_2d_array(Bz);
 	free_3d_array(E);
 	free_3d_array(B);
+	free_3d_array(global_E);
+	free_3d_array(global_B);
 }
 
 /**
@@ -80,12 +82,12 @@ void free_arrays() {
  * 
  */
 void problem_set_up() {
-	int abs_ex_i = rank * Ex_size_x; // To take the absolute horizontal iteration
-	int abs_ey_i = rank * (Ey_size_x - 1);
+	int ex_i = rank * Ex_size_x; // To take the absolute horizontal iteration
+	int ey_i = rank * (Ey_size_x - 1);
 	double xcen = lengthX / 2.0;
 	double ycen = lengthY / 2.0;
 
-    for (int i = abs_ex_i + 0; i < abs_ex_i + Ex_size_x; i++ ) {
+    for (int i = ex_i; i < ex_i + Ex_size_x; i++ ) {
         for (int j = 0; j < Ex_size_y; j++) {
             double xcoord = (i - xcen) * dx;
             double ycoord = j * dy;
@@ -94,10 +96,10 @@ void problem_set_up() {
             double rlen = sqrt(rx*rx + ry*ry);
 			double tx = (rlen == 0) ? 0 : ry / rlen;
             double mag = exp(-400.0 * (rlen - (lengthX / 4.0)) * (rlen - (lengthX / 4.0)));
-            Ex[i-abs_ex_i+1][j] = mag * tx;
+            Ex[i-ex_i+1][j] = mag * tx;
 		}
 	}
-    for (int i = abs_ey_i + 0; i < abs_ey_i + Ey_size_x-1; i++ ) {
+    for (int i = ey_i; i < ey_i + Ey_size_x-1; i++ ) {
         for (int j = 0; j < Ey_size_y; j++) {
             double xcoord = i * dx;
             double ycoord = (j - ycen) * dy;
@@ -106,7 +108,7 @@ void problem_set_up() {
             double rlen = sqrt(rx*rx + ry*ry);
             double ty = (rlen == 0) ? 0 : -rx / rlen;
 			double mag = exp(-400.0 * (rlen - (lengthY / 4.0)) * (rlen - (lengthY / 4.0)));
-            Ey[i-abs_ey_i][j] = mag * ty;
+            Ey[i-ey_i][j] = mag * ty;
 		}
 	}
 }
