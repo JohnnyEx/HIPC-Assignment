@@ -116,3 +116,4 @@ int write_vtk(char* filename) {
     fclose(f);
     return 0;
 }
+}

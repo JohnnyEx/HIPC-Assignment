@@ -11,4 +11,4 @@
 printf "Running maxwell_mpi regular job on ${SLURM_NTASKS} CPU cores"
 
 printf "\n\nOn a 4000 x 4000 grid\n\n"
-mpiexec -n ${SLURM_NTASKS} ./maxwell -x 4000 -y 4000 -f 1 -o mpi/my_sim
+mpiexec -n ${SLURM_NTASKS} ./maxwell

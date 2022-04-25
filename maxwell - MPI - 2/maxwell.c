@@ -187,9 +187,9 @@ int main(int argc, char *argv[]) {
 	MPI_Gather(B[0][0], 1, global_grid, global_B[0][0], 1, global_grid, 0, MPI_COMM_WORLD);
 	
 	// time stop
-	clock_t end = clock();
+	clock_t tend = clock();
     // calc the time;
-	double time_spent = (double)(end-begin) / CLOCKS_PER_SEC;
+	double time_spent = (double)(tend-begin) / CLOCKS_PER_SEC;
 	if (rank == 0)	printf("Time spent for this execution: %lf\n", time_spent);
 		
 	if (!no_output && rank == 0)
